@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Data Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #e6f2ff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .weather-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .location-info {
+            font-size: 1.2em;
+        }
+        .current-weather {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .main-temp {
+            font-size: 4em;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        .weather-icon {
+            font-size: 5em;
+        }
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .detail-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .detail-card h3 {
+            margin-top: 0;
+            color: #34495e;
+        }
+        .detail-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        .forecast {
+            margin-top: 30px;
+        }
+        .forecast h2 {
+            color: #34495e;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .forecast-days {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .forecast-day {
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            flex: 1;
+            margin: 0 5px;
+        }
+        .day-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .day-icon {
+            font-size: 2em;
+            margin: 10px 0;
+        }
+        .day-temp {
+            font-size: 1.2em;
+        }
+        .chart-container {
+            height: 300px;
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .logout-btn {
+            float: right;
+            padding: 8px 15px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .back-btn {
+            float: left;
+            padding: 8px 15px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="window.location.href='/sensors/'">Back to Sensors</button>
+        <button class="logout-btn" onclick="window.location.href='/logout/'">Logout</button>
+        <h1>Weather Data Dashboard</h1>
+        
+        <div class="weather-header">
+            <div class="location-info">
+                <h2>{{ farm.name }}</h2>
+                <div>Latitude: {{ farm.latitude }}° N, Longitude: {{ farm.longitude }}° W</div>
+                <div>Elevation: {{ farm.elevation|default:"N/A" }}m</div>
+            </div>
+            <div class="timestamp">
+                Last updated: {% now "Y-m-d H:i:s" %}
+            </div>
+        </div>
+        
+        <div class="current-weather">
+            <div class="weather-icon">
+                {% if weather_data.temperature > 25 %}
+                    ☀️
+                {% elif weather_data.temperature > 15 %}
+                    ⛅
+                {% else %}
+                    🌧️
+                {% endif %}
+            </div>
+            <div class="main-temp">{{ weather_data.temperature }}°C</div>
+            <div class="weather-description">
+                <h2>{{ weather_data.condition }}</h2>
+                <div>Feels like: {{ weather_data.feels_like }}°C</div>
+                <div>High: {{ weather_data.temp_max }}°C / Low: {{ weather_data.temp_min }}°C</div>
+            </div>
+        </div>
+        
+        <div class="weather-details">
+            <div class="detail-card">
+                <h3>Humidity</h3>
+                <div class="detail-value">{{ weather_data.humidity }}%</div>
+                <div>Dew point: {{ weather_data.dew_point }}°C</div>
+            </div>
+            <div class="detail-card">
+                <h3>Wind</h3>
+                <div class="detail-value">{{ weather_data.wind_speed }} km/h</div>
+                <div>Direction: {{ weather_data.wind_direction }}</div>
+                <div>Gusts: {{ weather_data.wind_gust }} km/h</div>
+            </div>
+            <div class="detail-card">
+                <h3>Pressure</h3>
+                <div class="detail-value">{{ weather_data.pressure }} hPa</div>
+                <div>Trend: {{ weather_data.pressure_trend }}</div>
+            </div>
+            <div class="detail-card">
+                <h3>Visibility</h3>
+                <div class="detail-value">{{ weather_data.visibility }} km</div>
+            </div>
+            <div class="detail-card">
+                <h3>UV Index</h3>
+                <div class="detail-value">{{ weather_data.uv_index }}</div>
+            </div>
+            <div class="detail-card">
+                <h3>Precipitation</h3>
+                <div class="detail-value">{{ weather_data.rainfall }} mm</div>
+                <div>Last hour: {{ weather_data.rain_1h }} mm</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="weather-chart" width="100%" height="100%"></canvas>
+        </div>
+        
+        <div class="forecast">
+            <h2>5-Day Forecast</h2>
+            <div class="forecast-days">
+                {% for day in forecast %}
+                <div class="forecast-day">
+                    <div class="day-name">{{ day.day }}</div>
+                    <div class="day-icon">{{ day.icon }}</div>
+                    <div class="day-temp">{{ day.temp_max }}° / {{ day.temp_min }}°</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('weather-chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels|safe }},
+                datasets: [
+                    {
+                        label: 'Temperature (°C)',
+                        data: {{ temperature_data|safe }},
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'Rainfall (mm)',
+                        data: {{ rainfall_data|safe }},
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        yAxisID: 'y1',
+                        type: 'bar'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    },
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html>

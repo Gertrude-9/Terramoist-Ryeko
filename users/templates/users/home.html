@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraMoist - Smart Agriculture Solutions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c786c;
+            --secondary: #004445;
+            --accent: #f8b400;
+            --light: #faf5e4;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .hero {
+            background: linear-gradient(rgba(44, 120, 108, 0.8), rgba(44, 120, 108, 0.8)), 
+            url('https://www.synox.io/wp-content/uploads/2022/04/smart-farming-agriculture-du-futur-iot.jpg') 
+            no-repeat center center;
+            background-size: cover;
+            color: white;
+            padding: 120px 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-weight: 700;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        .btn-cta {
+            background-color: var(--accent);
+            color: #333;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+        
+        .btn-cta:hover {
+            background-color: #e6a700;
+            transform: translateY(-2px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card {
+            padding: 30px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            height: 100%;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .navbar {
+            padding: 15px 0;
+            transition: all 0.3s;
+        }
+        
+        .navbar.scrolled {
+            background-color: white !important;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+        }
+        
+        .logo {
+            height: 40px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="https://th.bing.com/th/id/OIP.UsEMji-4XIPfx_GmcIVfBQHaEK?r=0&rs=1&pid=ImgDetMain" alt="TerraMoist Logo" class="logo">
+                <span class="fw-bold">TerraMoist</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                    <a class="btn btn-outline-primary" href="{% url 'login' %}">Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Smart Agriculture for a Sustainable Future</h1>
+            <p>TerraMoist's advanced soil monitoring system helps farmers optimize irrigation, reduce water waste, and increase crop yields through real-time data analytics.</p>
+            <a href="#contact" class="btn btn-cta">Get Started Today</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">How TerraMoist Works</h2>
+                <p class="text-muted">Our comprehensive solution provides everything you need for precision agriculture</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card text-center" style="background-image: url('https://www.precisa.com/wp-content/uploads/2022/06/soil.png');">
+                        <div class="feature-icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <h4>Soil Moisture Monitoring</h4>
+                        <p>Real-time tracking of soil moisture levels at multiple depths for optimal irrigation management.</p>
+                    </div>
+                </div>
+                
+                    <div class="col-md-4">
+                    <div class="feature-card text-center" style="position: relative; background-image: url('https://th.bing.com/th/id/OIP.q_QPo64syEpf_jcupA2DYAHaCe?r=0&o=7&rm=3&rs=1&pid=ImgDetMain'); background-size: cover; background-position: center; height: 300px; color: white;">
+                        
+                        <!-- Overlay -->
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1;"></div>
+                        
+                        <!-- Content -->
+                        <div style="position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px;">
+                            <div class="feature-icon" style="font-size: 2rem; margin-bottom: 10px;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h4 style="color: white;">Data Analytics</h4>
+                            <p style="color: white;">Advanced algorithms analyze soil data to provide actionable insights and recommendations.</p>
+                        </div>
+                    </div>
+                </div>
+
+                
+             <div class="col-md-4">
+                <div class="feature-card text-center" style="background-image:url('https://thumbs.dreamstime.com/b/woman-farmer-using-technology-mobile-corn-field-woman-farmer-using-technology-mobile-138804713.jpg'); background-size: cover; background-position: center; position: relative; height: 300px;">
+                    <div style="background: rgba(0,0,0,0.5); height: 100%; width: 100%; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
+                        <div class="feature-icon" style="font-size: 2rem; margin-bottom: 10px;">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h4>Mobile Alerts</h4>
+                        <p>Receive instant notifications on your phone when irrigation is needed or when issues arise.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Image + Text Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <img src="https://www.synox.io/wp-content/uploads/2022/04/smart-farming-agriculture-du-futur-iot.jpg" alt="TerraMoist in action" class="img-fluid rounded shadow">
+                </div>
+                <div class="col-lg-6">
+                    <h2 class="fw-bold mb-4">Precision Agriculture Made Simple</h2>
+                    <p class="mb-4">Our wireless soil sensors provide accurate, real-time data that helps you make informed decisions about irrigation, saving water and improving crop health.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-3"><i class="fas fa-check-circle text-primary me-2"></i> Reduce water usage by up to 30%</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-primary me-2"></i> Increase crop yields with optimal moisture levels</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-primary me-2"></i> 24/7 remote monitoring from any device</li>
+                        <li class="mb-3"><i class="fas fa-check-circle text-primary me-2"></i> Easy installation with no technical expertise required</li>
+                    </ul>
+                    <a href="#" class="btn btn-primary mt-3">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+   <section class="py-5" style="background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); color: white;">
+    <div class="container text-center py-4">
+        <h2 class="fw-bold mb-4">Ready to Transform Your Farming?</h2>
+        <p class="mb-4">Join hundreds of farmers who are already benefiting from TerraMoist's smart agriculture solutions.</p>
+        <a href="#contact" class="btn btn-light btn-lg" style="background-color: white; color: #2E7D32; border: none; font-weight: 600;">
+            Request a Demo
+        </a>
+    </div>
+</section>
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h5 class="fw-bold mb-4">TerraMoist</h5>
+                    <p>Innovative soil monitoring solutions for sustainable agriculture.</p>
+                    <div class="social-icons mt-4">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-4">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white">Home</a></li>
+                        <li class="mb-2"><a href="#" class="text-white">Features</a></li>
+                        <li class="mb-2"><a href="#" class="text-white">Pricing</a></li>
+                        <li class="mb-2"><a href="#" class="text-white">About</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-4">Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> National ICT innovation Hub Plot 9-21, Port bell Road, Nakawa</li>
+                        <li class="mb-2"><i class="fas fa-phone me-2"></i> +256 701376017 / +250 722 359 866</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2"></i> info@ryeko.org</li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="fw-bold mb-4">Newsletter</h5>
+                    <p>Subscribe to get updates on our latest products and offers.</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Your Email">
+                        <button class="btn btn-accent" type="button">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 TerraMoist. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>
