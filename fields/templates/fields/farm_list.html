@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farms - Farm Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background-color: #2e7d32; }
+        .card { border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-primary { background-color: #2e7d32; border: none; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-seedling me-2"></i>Farm Manager
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold text-success">
+                    <i class="fas fa-tractor me-3"></i>Farm Management
+                </h1>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3 class="text-success">{{ total_farms }}</h3>
+                        <p class="mb-0">Total Farms</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farms Grid -->
+        <div class="row">
+            {% for farm in farms %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">{{ farm.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fas fa-user me-1"></i>Owner: {{ farm.owner.get_full_name|default:farm.owner.username }}</p>
+                        <p><i class="fas fa-map-marker-alt me-1"></i>{{ farm.address|default:"Location not specified" }}</p>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h6 class="text-success">{{ farm.total_area|floatformat:1 }}</h6>
+                                <small>Acres</small>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="text-primary">{{ farm.fields.count }}</h6>
+                                <small>Fields</small>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="text-info">{{ farm.sensors.count }}</h6>
+                                <small>Sensors</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'farms:farm_detail' farm.pk %}" class="btn btn-primary w-100">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <h4>No farms found</h4>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

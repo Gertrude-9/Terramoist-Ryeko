@@ -22,7 +22,8 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('users/', include('users.urls')),
+    path('', include('users.urls')),
+    path('fields', include('fields.urls')),
     path('data_collection/', include('data_collection.urls')),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     

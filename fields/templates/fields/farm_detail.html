@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ farm.name }} - Farm Details</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background-color: #2e7d32; }
+        .card { border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn-primary { background-color: #2e7d32; border: none; }
+        #farmMap { height: 400px; border-radius: 8px; }
+        .field-marker { background-color: #2e7d32; color: white; padding: 3px 8px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'farms:farm_list' %}">
+                <i class="fas fa-seedling me-2"></i>Farm Manager
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="text-success">{{ farm.name }}</h1>
+                <p><i class="fas fa-user me-2"></i>Owned by {{ farm.owner.get_full_name|default:farm.owner.username }}</p>
+                {% if farm.latitude and farm.longitude %}
+                <p><i class="fas fa-map-marker-alt me-2"></i>
+                    Coordinates: {{ farm.latitude|floatformat:6 }}, {{ farm.longitude|floatformat:6 }}
+                </p>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h3>{{ farm.total_area|floatformat:1 }}</h3>
+                        <p>Total Acres</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farm Map -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-map me-2"></i>Farm Map</h5>
+            </div>
+            <div class="card-body">
+                <div id="farmMap"></div>
+            </div>
+        </div>
+
+        <!-- Fields List -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-seedling me-2"></i>Fields</h5>
+            </div>
+            <div class="card-body">
+                {% if farm.fields.all %}
+                <div class="row">
+                    {% for field in farm.fields.all %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5>{{ field.name }}</h5>
+                                <p>Crop: {{ field.crop_type }}</p>
+                                <p>Area: {{ field.area }} acres</p>
+                                {% if field.boundary_coordinates %}
+                                <p class="text-muted">
+                                    <i class="fas fa-map-marked-alt"></i> 
+                                    Boundary coordinates available
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>No fields found for this farm.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // Initialize map
+        const map = L.map('farmMap').setView([{{ farm.latitude|default:0 }}, {{ farm.longitude|default:0 }}], 13);
+        
+        // Add tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Add farm location marker
+        {% if farm.latitude and farm.longitude %}
+        L.marker([{{ farm.latitude }}, {{ farm.longitude }}])
+            .addTo(map)
+            .bindPopup("<b>{{ farm.name }}</b><br>Main location")
+            .openPopup();
+        {% endif %}
+
+        // Add field markers
+        {% for field in farm.fields.all %}
+            {% if field.boundary_coordinates %}
+                // Get center of boundary coordinates
+                const coords{{ field.id }} = JSON.parse('{{ field.boundary_coordinates|escapejs }}');
+                if (coords{{ field.id }}.length > 0) {
+                    // Calculate center point (simplified)
+                    const center = coords{{ field.id }}.reduce((acc, curr) => {
+                        return [acc[0] + curr[0]/coords{{ field.id }}.length, 
+                                acc[1] + curr[1]/coords{{ field.id }}.length];
+                    }, [0, 0]);
+                    
+                    // Add marker
+                    L.marker(center, {
+                        icon: L.divIcon({
+                            className: 'field-marker',
+                            html: '<i class="fas fa-seedling"></i>',
+                            iconSize: [30, 30]
+                        })
+                    }).addTo(map)
+                    .bindPopup("<b>{{ field.name }}</b><br>Crop: {{ field.crop_type }}");
+                    
+                    // Add polygon if we have enough points
+                    if (coords{{ field.id }}.length >= 3) {
+                        L.polygon(coords{{ field.id }}, {color: '#2e7d32'}).addTo(map);
+                    }
+                }
+            {% endif %}
+        {% endfor %}
+    </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraMoist - Sensor Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .sensor-header {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 6px solid #28a745;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .status-optimal {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .chart-container {
+            height: 300px;
+            margin-bottom: 30px;
+        }
+        .sensor-meta {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .reading-card {
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .reading-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="field_detail.html" class="btn btn-secondary mb-4">← Back to Field</a>
+        
+        <div class="sensor-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Soil Moisture #1</h1>
+                <span class="status-badge status-optimal">OPTIMAL</span>
+            </div>
+            <p class="mb-0"><strong>Location:</strong> North Field (Corn) | <strong>Type:</strong> Soil Moisture Sensor</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h3>Moisture Trends</h3>
+                <div class="chart-container">
+                    <canvas id="moistureChart"></canvas>
+                </div>
+                
+                <h3>Temperature Trends</h3>
+                <div class="chart-container">
+                    <canvas id="tempChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="sensor-meta">
+                    <h4>Sensor Information</h4>
+                    <p><strong>Installation Date:</strong> April 10, 2023</p>
+                    <p><strong>Last Maintenance:</strong> June 15, 2023</p>
+                    <p><strong>Battery Level:</strong> 78%</p>
+                    <p><strong>Signal Strength:</strong> Excellent</p>
+                    <p><strong>Firmware Version:</strong> 2.3.5</p>
+                    <hr>
+                    <h5>Threshold Settings</h5>
+                    <p><strong>Optimal Range:</strong> 50-70%</p>
+                    <p><strong>Monitoring Threshold:</strong> 40-50%</p>
+                    <p><strong>Critical Threshold:</strong> Below 40%</p>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h5>Recommendations</h5>
+                    <p>Current moisture levels are optimal for corn growth. Next scheduled irrigation in 2 days.</p>
+                </div>
+            </div>
+        </div>
+
+        <h3>Recent Readings</h3>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card reading-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Current Reading</h5>
+                        <p class="display-4">65%</p>
+                        <p class="text-muted">Updated: 5 minutes ago</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card reading-card">
+                    <div class="card-body">
+                        <h5 class="card-title">24h Average</h5>
+                        <p class="display-4">63%</p>
+                        <p class="text-muted">Range: 58-67%</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card reading-card">
+                    <div class="card-body">
+                        <h5 class="card-title">7d Average</h5>
+                        <p class="display-4">61%</p>
+                        <p class="text-muted">Range: 52-68%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <button class="btn btn-primary me-2">View Historical Data</button>
+            <button class="btn btn-outline-secondary me-2">Configure Alerts</button>
+            <button class="btn btn-outline-danger">Deactivate Sensor</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Moisture Chart
+        const moistureCtx = document.getElementById('moistureChart').getContext('2d');
+        new Chart(moistureCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Soil Moisture (%)',
+                    data: [58, 60, 62, 63, 65, 64, 63],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 30,
+                        max: 80,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    annotation: {
+                        annotations: {
+                            optimalMin: {
+                                type: 'line',
+                                yMin: 50,
+                                yMax: 50,
+                                borderColor: 'rgb(75, 192, 192)',
+                                borderWidth: 2,
+                                label: {
+                                    content: 'Optimal Min',
+                                    enabled: true
+                                }
+                            },
+                            optimalMax: {
+                                type: 'line',
+                                yMin: 70,
+                                yMax: 70,
+                                borderColor: 'rgb(75, 192, 192)',
+                                borderWidth: 2,
+                                label: {
+                                    content: 'Optimal Max',
+                                    enabled: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Temperature Chart
+        const tempCtx = document.getElementById('tempChart').getContext('2d');
+        new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: ['6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am', '3am'],
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: [18, 20, 22, 24, 23, 20, 19, 18],
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '°C';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
