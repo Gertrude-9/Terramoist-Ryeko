@@ -1,101 +1,71 @@
 # fields/admin.py
+
 from django.contrib import admin
-from django.contrib.gis.admin import GISModelAdmin
-from django.utils.html import format_html
-from .models import Field, IrrigationZone, Sensor
-from .utils import FieldGeometryUtils, IrrigationGDALOperations, SensorGDALOperations
+from .models import Farm, Field, SensorType, Sensor, SensorReading, Alert
 
-class IrrigationZoneInline(admin.TabularInline):
-    model = IrrigationZone
-    extra = 0
-    fields = ('name', 'zone_type', 'area_acres', 'slope')
-    readonly_fields = ('area_acres',)
+# Register your models here.
 
-    def area_acres(self, obj):
-        return round(FieldGeometryUtils.calculate_field_area(obj.boundary), 2)
-    area_acres.short_description = 'Area (acres)'
-
-class SensorInline(admin.TabularInline):
-    model = Sensor
-    extra = 0
-    fields = ('name', 'sensor_type', 'status', 'last_reading')
+@admin.register(Farm)
+class FarmAdmin(admin.ModelAdmin):
+    list_display = ('name', 'owner', 'location', 'created_at')
+    search_fields = ('name', 'owner__username', 'location')
+    list_filter = ('owner',)
 
 @admin.register(Field)
-class FieldAdmin(GISModelAdmin):
-    list_display = ('name', 'farm', 'crop_type', 'area_acres', 'valid_geometry', 'map_preview')
-    list_filter = ('farm', 'crop_type', 'soil_type')
-    search_fields = ('name', 'farm__name')
-    inlines = [IrrigationZoneInline, SensorInline]
-    actions = ['calculate_statistics']
-    readonly_fields = ('map_preview', 'valid_geometry', 'area_acres')
+class FieldAdmin(admin.ModelAdmin):
+    # Corrected list_display to use 'area', 'latitude', 'longitude'
+    list_display = ('name', 'farm', 'area', 'crop_type', 'latitude', 'longitude', 'is_active', 'planting_date', 'created_at')
+    list_filter = ('farm', 'crop_type', 'soil_type', 'is_active', 'irrigation_system')
+    search_fields = ('name', 'description', 'farm__name')
+    raw_id_fields = ('farm',) # Useful for ForeignKey fields when many instances exist
 
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('farm', 'name', 'crop_type', 'soil_type')
-        }),
-        ('Geospatial Data', {
-            'fields': ('boundary', 'map_preview', 'valid_geometry', 'area_acres'),
-            'classes': ('collapse', 'wide')
-        }),
-    )
-
-    def area_acres(self, obj):
-        return round(FieldGeometryUtils.calculate_field_area(obj.boundary), 2)
-    area_acres.short_description = 'Area (acres)'
-
-    def valid_geometry(self, obj):
-        validation = FieldGeometryUtils.validate_field_polygon(obj.boundary)
-        if validation['is_valid']:
-            return format_html('<span style="color: green;">✓ Valid</span>')
-        return format_html('<span style="color: red;">✗ Invalid: {}</span>', validation['errors'][0])
-    valid_geometry.short_description = 'Geometry Status'
-
-    def map_preview(self, obj):
-        if obj.boundary:
-            return format_html(
-                '<div style="width: 300px; height: 200px;" data-geometry="{}"></div>',
-                obj.boundary.geojson
-            )
-        return "No boundary defined"
-    map_preview.short_description = 'Boundary Preview'
-
-    def calculate_statistics(self, request, queryset):
-        for field in queryset:
-            # Example of using your utils in admin actions
-            stats = FieldGeometryUtils.validate_field_polygon(field.boundary)
-            self.message_user(
-                request,
-                f"Stats for {field.name}: Area: {self.area_acres(field)} acres, "
-                f"Perimeter: {stats.get('perimeter_meters', 0):.2f} meters"
-            )
-    calculate_statistics.short_description = "Calculate field statistics"
-
-@admin.register(IrrigationZone)
-class IrrigationZoneAdmin(GISModelAdmin):
-    list_display = ('name', 'field', 'zone_type', 'area_acres', 'water_needs')
-    list_filter = ('zone_type', 'field__farm')
-    readonly_fields = ('area_acres', 'water_needs_display')
-
-    def area_acres(self, obj):
-        return round(FieldGeometryUtils.calculate_field_area(obj.boundary), 2)
-    area_acres.short_description = 'Area (acres)'
-
-    def water_needs(self, obj):
-        needs = IrrigationGDALOperations.calculate_zone_water_needs(obj.boundary)
-        return f"{needs['daily_water_need_liters']:.1f} L/day"
-    water_needs.short_description = 'Water Needs'
+@admin.register(SensorType)
+class SensorTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'unit')
+    search_fields = ('name',)
 
 @admin.register(Sensor)
 class SensorAdmin(admin.ModelAdmin):
-    list_display = ('name', 'field', 'sensor_type', 'status', 'coverage_area')
-    list_filter = ('sensor_type', 'status', 'field__farm')
-    readonly_fields = ('coverage_area',)
+    # Corrected list_display to use 'latitude', 'longitude'
+    list_display = ('name', 'field', 'sensor_type', 'latitude', 'longitude', 'depth', 'is_active', 'status', 'device_id', 'installation_date')
+    list_filter = ('field', 'sensor_type', 'is_active', 'status')
+    search_fields = ('name', 'device_id', 'description', 'field__name', 'sensor_type__name')
+    raw_id_fields = ('field', 'sensor_type')
+    fieldsets = (
+        (None, {
+            'fields': ('field', 'name', 'sensor_type', 'device_id', 'status', 'is_active', 'description')
+        }),
+        ('Location & Depth', {
+            'fields': ('latitude', 'longitude', 'depth', 'installation_date')
+        }),
+        ('Calibration', {
+            'fields': ('calibration_slope', 'calibration_offset', 'last_calibration')
+        }),
+        ('Operational Details', {
+            'fields': ('reading_frequency', 'battery_level', 'min_threshold', 'max_threshold')
+        }),
+    )
 
-    def coverage_area(self, obj):
-        coverage = SensorGDALOperations.create_sensor_coverage_area(obj.location, obj.coverage_radius)
-        return f"{FieldGeometryUtils.calculate_field_area(coverage):.2f} acres"
-    coverage_area.short_description = 'Coverage Area'
+@admin.register(SensorReading)
+class SensorReadingAdmin(admin.ModelAdmin):
+    list_display = ('sensor', 'value', 'timestamp')
+    list_filter = ('sensor__field__farm', 'sensor__field', 'sensor__sensor_type', 'timestamp')
+    search_fields = ('sensor__name', 'sensor__device_id', 'sensor__field__name')
+    date_hierarchy = 'timestamp'
+    raw_id_fields = ('sensor',)
 
-# Add GIS-specific admin customization
-admin.site.site_header = "Farm Management GIS Admin"
-admin.site.index_title = "Geospatial Farm Administration"
+@admin.register(Alert)
+class AlertAdmin(admin.ModelAdmin):
+    list_display = ('sensor', 'alert_type', 'severity', 'is_resolved', 'created_at', 'resolved_at', 'resolved_by')
+    list_filter = ('alert_type', 'severity', 'is_resolved', 'created_at', 'sensor__field__farm', 'sensor__field', 'sensor__sensor_type')
+    search_fields = ('message', 'sensor__name', 'sensor__field__name')
+    date_hierarchy = 'created_at'
+    raw_id_fields = ('sensor', 'resolved_by')
+    actions = ['mark_as_resolved']
+
+    def mark_as_resolved(self, request, queryset):
+        for alert in queryset:
+            alert.resolve(user=request.user)
+        self.message_user(request, f"{queryset.count()} alerts marked as resolved.")
+    mark_as_resolved.short_description = "Mark selected alerts as resolved"
+

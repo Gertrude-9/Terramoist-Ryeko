@@ -1,0 +1,99 @@
+<!-- templates/fields/alerts.html -->
+{% extends 'fields/base.html' %}
+
+{% block title %}Alerts - Farm Fields{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Alert Management</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'fields:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Alerts</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Alerts</option>
+                    <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active Only</option>
+                    <option value="resolved" {% if current_status == 'resolved' %}selected{% endif %}>Resolved Only</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="sensor_type" class="form-label">Sensor Type</label>
+                <select name="sensor_type" id="sensor_type" class="form-select">
+                    <option value="all">All Types</option>
+                    {% for sensor_type in sensor_types %}
+                        <option value="{{ sensor_type.name }}" {% if current_sensor_type == sensor_type.name %}selected{% endif %}>
+                            {{ sensor_type.get_name_display }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <a href="{% url 'fields:alerts' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Alerts List -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-bell me-2"></i>Alerts ({{ alerts.count }})</h5>
+    </div>
+    <div class="card-body">
+        {% for alert in alerts %}
+            <div class="alert alert-{{ alert.severity }} {% if alert.is_resolved %}alert-secondary{% endif %} d-flex justify-content-between align-items-start mb-3">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-{{ alert.severity }} me-2">{{ alert.get_severity_display }}</span>
+                        <strong>{{ alert.sensor.sensor_type.name|title }} Alert</strong>
+                        {% if alert.is_resolved %}
+                            <span class="badge bg-success ms-2">Resolved</span>
+                        {% endif %}
+                    </div>
+                    <p class="mb-2">{{ alert.message }}</p>
+                    <div class="small text-muted">
+                        <div><i class="fas fa-map-marker-alt me-1"></i>{{ alert.sensor.field.name }} - {{ alert.sensor.field.farm.name }}</div>
+                        <div><i class="fas fa-clock me-1"></i>{{ alert.created_at|date:"M d, Y H:i" }} ({{ alert.created_at|timesince }} ago)</div>
+                        {% if alert.is_resolved %}
+                            <div><i class="fas fa-check me-1"></i>Resolved on {{ alert.resolved_at|date:"M d, Y H:i" }}
+                                {% if alert.resolved_by %}by {{ alert.resolved_by.username }}{% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="ms-3">
+                    {% if not alert.is_resolved %}
+                        <a href="{% url 'fields:resolve_alert' alert.id %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-check"></i> Resolve
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'fields:field_detail' alert.sensor.field.id %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye"></i> View Field
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center py-5">
+                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                <h4>No alerts found</h4>
+                <p class="text-muted">No alerts match your current filters.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+<!-- templates/irrigation/historical_data.html -->
+{% extends 'irrigation/base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Historical Irrigation Data</h1>
+    <p class="page-subtitle">View past irrigation activities and statistics</p>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header">Filters & Statistics</div>
+    <div class="card-body">
+        <form method="get" style="margin-bottom: 2rem;">
+            <div class="grid grid-3">
+                <div class="form-group">
+                    <label class="form-label" for="date_from">From Date</label>
+                    <input type="date" id="date_from" name="date_from" class="form-control" value="{{ date_from }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="date_to">To Date</label>
+                    <input type="date" id="date_to" name="date_to" class="form-control" value="{{ date_to }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="zone">Zone</label>
+                    <select id="zone" name="zone" class="form-control">
+                        <option value="">All Zones</option>
+                        {% for zone in zones %}
+                        <option value="{{ zone.id }}" {% if current_zone == zone.id|stringformat:"s" %}selected{% endif %}>
+                            {{ zone.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+        </form>
+
+        <div class="grid grid-3">
+            <div style="text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 0.375rem;">
+                <div style="font-size: 2rem; font-weight: bold; color: #28a745;">{{ logs.count }}</div>
+                <div style="color: #6c757d;">Total Sessions</div>
+            </div>
+            <div style="text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 0.375rem;">
+                <div style="font-size: 2rem; font-weight: bold; color: #007bff;">{{ total_volume|floatformat:0 }}</div>
+                <div style="color: #6c757d;">Total Liters</div>
+            </div>
+            <div style="text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 0.375rem;">
+                <div style="font-size: 2rem; font-weight: bold; color: #17a2b8;">{{ avg_duration }}</div>
+                <div style="color: #6c757d;">Avg Duration (min)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Irrigation History</div>
+    <div class="card-body">
+        {% if logs %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Zone</th>
+                        <th>Schedule</th>
+                        <th>Duration</th>
+                        <th>Volume</th>
+                        <th>Weather</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.start_time|date:"M d, Y H:i" }}</td>
+                        <td><strong>{{ log.zone.name }}</strong></td>
+                        <td>
+                            {% if log.schedule %}
+                                {{ log.schedule.name }}
+                            {% else %}
+                                <em style="color: #6c757d;">Manual</em>
+                            {% endif %}
+                        </td>
+                        <td>{{ log.duration_actual|default:"-" }} min</td>
+                        <td>{{ log.water_volume_liters|default:"-" }} L</td>
+                        <td>{{ log.weather_condition|default:"-" }}</td>
+                        <td>
+                            {% if log.notes %}
+                                <span title="{{ log.notes }}">{{ log.notes|truncatechars:30 }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-chart-line"></i>
+                <h3>No Data Found</h3>
+                <p>No irrigation history matches your current filters.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+                

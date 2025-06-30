@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Insights Dashboard - Terramoist</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+    <style>
+        .insight-card {
+            transition: all 0.3s ease;
+        }
+        .insight-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .unread {
+            border-left: 4px solid #28a745;
+        }
+        .sensor-chip {
+            display: inline-block;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 5px 12px;
+            margin: 2px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sensor-chip:hover {
+            background: #e9ecef;
+        }
+        .sensor-chip.selected {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-brain me-2"></i>AI Insights Dashboard</h1>
+        <a href="{% url 'predictions:ai_preferences' %}" class="btn btn-outline-primary">
+            <i class="fas fa-cog me-1"></i>AI Preferences
+        </a>
+    </div>
+</div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="text-success" id="activeInsights">3</h3>
+                        <p class="text-muted mb-0">Active Insights</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary" id="unreadInsights">2</h3>
+                        <p class="text-muted mb-0">Unread Insights</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="text-info" id="highPriority">1</h3>
+                        <p class="text-muted mb-0">High Priority</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line me-2"></i>Moisture Trends with Predictions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-lightbulb me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Select Sensors:</label>
+                            <div id="sensorSelection">
+                                <span class="sensor-chip selected" data-sensor="garden-01">Garden-01</span>
+                                <span class="sensor-chip" data-sensor="greenhouse-02">Greenhouse-02</span>
+                                <span class="sensor-chip" data-sensor="field-03">Field-03</span>
+                                <span class="sensor-chip" data-sensor="indoor-04">Indoor-04</span>
+                                <span class="sensor-chip" data-sensor="balcony-05">Balcony-05</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-success w-100 mb-2" id="generateAllInsights">
+                            <i class="fas fa-magic me-1"></i>Generate Insights for Selected Sensors
+                        </button>
+                        <button class="btn btn-primary w-100 mb-2" id="refreshInsights">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh Insights
+                        </button>
+                        <button class="btn btn-warning w-100" id="markAllRead">
+                            <i class="fas fa-check-circle me-1"></i>Mark All as Read
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list me-2"></i>Recent Insights</h5>
+                    </div>
+                    <div class="card-body" id="insightsContainer">
+                        <!-- Insights will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // Dummy data
+        const sensors = {
+            'garden-01': { name: 'Garden Sensor 01', location: 'Main Garden' },
+            'greenhouse-02': { name: 'Greenhouse Sensor 02', location: 'Greenhouse A' },
+            'field-03': { name: 'Field Sensor 03', location: 'North Field' },
+            'indoor-04': { name: 'Indoor Sensor 04', location: 'Living Room' },
+            'balcony-05': { name: 'Balcony Sensor 05', location: 'Balcony Garden' }
+        };
+
+        let insights = [
+            {
+                id: 1,
+                title: "Moisture Level Critical",
+                description: "Garden sensor showing critically low moisture levels. Immediate watering recommended.",
+                sensor: "garden-01",
+                priority: "high",
+                severity: "danger",
+                icon: "exclamation-triangle",
+                read: false,
+                created_at: "2 hours ago"
+            },
+            {
+                id: 2,
+                title: "Optimal Growing Conditions",
+                description: "Greenhouse conditions are perfect for plant growth. Maintain current settings.",
+                sensor: "greenhouse-02",
+                priority: "low",
+                severity: "success",
+                icon: "leaf",
+                read: false,
+                created_at: "5 hours ago"
+            },
+            {
+                id: 3,
+                title: "Watering Schedule Adjustment",
+                description: "Based on weather forecast, consider adjusting watering schedule for next week.",
+                sensor: "field-03",
+                priority: "medium",
+                severity: "warning",
+                icon: "clock",
+                read: true,
+                created_at: "1 day ago"
+            }
+        ];
+
+        // Chart data
+        const trendLabels = ['6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM', '12 AM', '3 AM'];
+        const actualMoisture = [45, 42, 38, 35, 40, 42, 44, 46];
+        const predictedMoisture = [44, 41, 36, 33, 38, 41, 43, 45];
+
+        // Initialize chart
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        const trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [
+                    {
+                        label: 'Actual Moisture',
+                        data: actualMoisture,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Predicted Moisture',
+                        data: predictedMoisture,
+                        borderColor: '#17a2b8',
+                        backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Moisture Level (%)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Insight templates for generation
+        const insightTemplates = [
+            {
+                titles: ["Moisture Level Alert", "Watering Needed", "Dry Soil Detected"],
+                descriptions: ["Soil moisture has dropped below optimal levels", "Consider watering within the next 2 hours", "Moisture levels are 15% below recommended range"],
+                severity: "warning",
+                icon: "tint",
+                priority: "medium"
+            },
+            {
+                titles: ["Perfect Growing Conditions", "Optimal Environment", "Ideal Moisture Range"],
+                descriptions: ["Current conditions are perfect for plant growth", "Moisture and temperature levels are in optimal range", "Plants are thriving in current conditions"],
+                severity: "success",
+                icon: "leaf",
+                priority: "low"
+            },
+            {
+                titles: ["Critical Moisture Level", "Immediate Action Required", "Plant Stress Detected"],
+                descriptions: ["Urgent watering required to prevent plant damage", "Moisture level critically low - act immediately", "Plants showing signs of water stress"],
+                severity: "danger",
+                icon: "exclamation-triangle",
+                priority: "high"
+            },
+            {
+                titles: ["Weather Pattern Change", "Humidity Fluctuation", "Environmental Shift"],
+                descriptions: ["Weather patterns suggest adjusting watering schedule", "Humidity changes detected - monitor closely", "Environmental conditions are changing"],
+                severity: "info",
+                icon: "cloud-sun",
+                priority: "medium"
+            }
+        ];
+
+        function renderInsights() {
+            const container = document.getElementById('insightsContainer');
+            
+            if (insights.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-lightbulb fa-3x text-muted mb-3"></i>
+                        <h4>No Insights Yet</h4>
+                        <p class="text-muted">Generate insights to see recommendations here</p>
+                        <button class="btn btn-success" id="generateFirstInsights">
+                            <i class="fas fa-magic me-1"></i>Generate First Insights
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = insights.map(insight => `
+                <div class="insight-card card mb-3 ${!insight.read ? 'unread' : ''}" id="insight-${insight.id}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="card-title">
+                                <i class="fas fa-${insight.icon} me-2 text-${insight.severity}"></i>
+                                ${insight.title}
+                            </h5>
+                            <div>
+                                <span class="badge bg-${insight.severity}">${insight.priority.toUpperCase()}</span>
+                                <small class="text-muted ms-2">${insight.created_at}</small>
+                            </div>
+                        </div>
+                        <p class="card-text">${insight.description}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">For sensor: ${sensors[insight.sensor].name}</small>
+                            <div>
+                                <button class="btn btn-sm btn-outline-success mark-read-btn" data-id="${insight.id}">
+                                    <i class="fas fa-check me-1"></i>Mark Read
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger dismiss-btn" data-id="${insight.id}">
+                                    <i class="fas fa-times me-1"></i>Dismiss
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary details-btn" data-sensor="${insight.sensor}">
+                                    <i class="fas fa-arrow-right me-1"></i>Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            updateStats();
+            attachEventListeners();
+        }
+
+        function updateStats() {
+            const activeInsights = insights.length;
+            const unreadInsights = insights.filter(i => !i.read).length;
+            const highPriority = insights.filter(i => i.priority === 'high').length;
+            
+            document.getElementById('activeInsights').textContent = activeInsights;
+            document.getElementById('unreadInsights').textContent = unreadInsights;
+            document.getElementById('highPriority').textContent = highPriority;
+        }
+
+        function generateInsight(sensorId) {
+            const template = insightTemplates[Math.floor(Math.random() * insightTemplates.length)];
+            const newInsight = {
+                id: Date.now() + Math.random(),
+                title: template.titles[Math.floor(Math.random() * template.titles.length)],
+                description: template.descriptions[Math.floor(Math.random() * template.descriptions.length)],
+                sensor: sensorId,
+                priority: template.priority,
+                severity: template.severity,
+                icon: template.icon,
+                read: false,
+                created_at: "Just now"
+            };
+            
+            insights.unshift(newInsight);
+        }
+
+        function attachEventListeners() {
+            // Mark as read
+            document.querySelectorAll('.mark-read-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const insightId = this.dataset.id;
+                    const insight = insights.find(i => i.id == insightId);
+                    if (insight) {
+                        insight.read = true;
+                        document.getElementById(`insight-${insightId}`).classList.remove('unread');
+                        updateStats();
+                    }
+                });
+            });
+
+            // Dismiss insight
+            document.querySelectorAll('.dismiss-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const insightId = this.dataset.id;
+                    insights = insights.filter(i => i.id != insightId);
+                    renderInsights();
+                });
+            });
+
+            // Details button
+            document.querySelectorAll('.details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sensorId = this.dataset.sensor;
+                    alert(`Opening details for sensor: ${sensors[sensorId].name}`);
+                });
+            });
+        }
+
+        // Sensor selection
+        document.querySelectorAll('.sensor-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        // Generate insights
+        document.getElementById('generateAllInsights').addEventListener('click', function() {
+            const selectedSensors = Array.from(document.querySelectorAll('.sensor-chip.selected'))
+                .map(chip => chip.dataset.sensor);
+            
+            if (selectedSensors.length === 0) {
+                alert('Please select at least one sensor');
+                return;
+            }
+
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generating...';
+            
+            setTimeout(() => {
+                selectedSensors.forEach(sensorId => {
+                    generateInsight(sensorId);
+                });
+                
+                renderInsights();
+                this.innerHTML = '<i class="fas fa-magic me-1"></i>Generate Insights for Selected Sensors';
+                
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    <strong>Success!</strong> Generated ${selectedSensors.length} new insights.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.container-fluid').prepend(alert);
+                
+                setTimeout(() => alert.remove(), 3000);
+            }, 2000);
+        });
+
+        // Mark all as read
+        document.getElementById('markAllRead').addEventListener('click', function() {
+            insights.forEach(insight => insight.read = true);
+            document.querySelectorAll('.insight-card').forEach(card => {
+                card.classList.remove('unread');
+            });
+            updateStats();
+        });
+
+        // Refresh insights
+        document.getElementById('refreshInsights').addEventListener('click', function() {
+            location.reload();
+        });
+
+        // Initial render
+        renderInsights();
+    </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+{% extends 'predictions/base.html' %}
+
+{% block title %}Sensor Insights - Terramoist{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .recommendation-card {
+        border-left: 4px solid var(--bs-success);
+    }
+    .critical-recommendation {
+        border-left: 4px solid var(--bs-danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-brain me-2"></i>AI Insights for 
+            <span class="text-success">{{ sensor.name }}</span>
+        </h1>
+        <div>
+            <button class="btn btn-outline-primary me-2" id="refreshSensorInsights">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+            <a href="{% url 'predictions:ai_insights_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Sensor Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ sensor.name }}</p>
+                            <p><strong>Location:</strong> {{ sensor.location }}</p>
+                            <p><strong>Plant:</strong> {{ sensor.plant_profile.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Current Moisture:</strong> 
+                                <span class="badge bg-{% if sensor_status == 'optimal' %}success{% elif sensor_status == 'low' %}warning{% else %}danger{% endif %}">
+                                    {{ current_moisture }}%
+                                </span>
+                            </p>
+                            <p><strong>Optimal Range:</strong> {{ sensor.plant_profile.optimal_moisture_min }}% - {{ sensor.plant_profile.optimal_moisture_max }}%</p>
+                            <p><strong>Last Reading:</strong> {{ last_reading_time|timesince }} ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line me-2"></i>Moisture Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="sensorTrendChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Current Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_insights %}
+                        {% for insight in active_insights %}
+                        <div class="card mb-3 {% if insight.priority == 'high' %}critical-recommendation{% else %}recommendation-card{% endif %}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="card-title">
+                                            <i class="fas fa-{{ insight.icon }} me-2 text-{{ insight.severity }}"></i>
+                                            {{ insight.title }}
+                                        </h5>
+                                        <p class="card-text">{{ insight.description }}</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ insight.severity }}">{{ insight.get_priority_display }}</span>
+                                        <small class="d-block text-muted">{{ insight.created_at|timesince }} ago</small>
+                                    </div>
+                                </div>
+                                {% if insight.suggested_actions %}
+                                <div class="mt-3">
+                                    <h6>Suggested Actions:</h6>
+                                    <ul>
+                                        {% for action in insight.suggested_actions %}
+                                        <li>{{ action }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button class="btn btn-sm btn-outline-success me-2 mark-read-btn" data-id="{{ insight.id }}">
+                                        <i class="fas fa-check me-1"></i>Mark Read
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger dismiss-btn" data-id="{{ insight.id }}">
+                                        <i class="fas fa-times me-1"></i>Dismiss
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h4>No Current Issues</h4>
+                            <p class="text-muted">This sensor appears to be in good condition</p>
+                            <button class="btn btn-primary" id="generateInsights">
+                                <i class="fas fa-magic me-1"></i>Generate New Insights
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-history me-2"></i>Insight History</h5>
+                </div>
+                <div class="card-body">
+                    {% if insight_history %}
+                    <div class="list-group">
+                        {% for insight in insight_history %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ insight.title }}</h6>
+                                <small class="text-muted">{{ insight.created_at|date:"M d" }}</small>
+                            </div>
+                            <p class="mb-1 text-muted small">{{ insight.description|truncatewords:10 }}</p>
+                            <small><span class="badge bg-{{ insight.severity }}">{{ insight.get_priority_display }}</span></small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No historical insights for this sensor</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-success w-100 mb-2" id="generateNewInsights">
+                        <i class="fas fa-magic me-1"></i>Generate New Insights
+                    </button>
+                    <button class="btn btn-primary w-100 mb-2" id="viewRawData">
+                        <i class="fas fa-database me-1"></i>View Raw Data
+                    </button>
+                    <button class="btn btn-warning w-100" id="compareWithOthers">
+                        <i class="fas fa-chart-bar me-1"></i>Compare With Others
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialize sensor trend chart
+    const sensorTrendCtx = document.getElementById('sensorTrendChart').getContext('2d');
+    const sensorTrendChart = new Chart(sensorTrendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ sensor_trend_labels|safe }},
+            datasets: [{
+                label: 'Moisture Level',
+                data: {{ sensor_trend_data|safe }},
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Moisture Level (%)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Mark insight as read
+    $('.mark-read-btn').click(function() {
+        const insightId = $(this).data('id');
+        $.post(`/predictions/api/insight/${insightId}/mark-read/`, {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function() {
+            location.reload();
+        });
+    });
+
+    // Dismiss insight
+    $('.dismiss-btn').click(function() {
+        const insightId = $(this).data('id');
+        $.post(`/predictions/api/insight/${insightId}/dismiss/`, {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function() {
+            location.reload();
+        });
+    });
+
+    // Generate new insights
+    $('#generateInsights, #generateNewInsights').click(function() {
+        $(this).html('<i class="fas fa-spinner fa-spin me-1"></i>Generating...');
+        $.post(`/predictions/api/sensor/{{ sensor.sensor_id }}/generate-insights/`, {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function() {
+            location.reload();
+        });
+    });
+
+    // Refresh insights
+    $('#refreshSensorInsights').click(function() {
+        $(this).html('<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...');
+        location.reload();
+    });
+});
+</script>
+{% endblock %}

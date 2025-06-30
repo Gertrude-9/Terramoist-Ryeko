@@ -1,0 +1,135 @@
+<!-- templates/irrigation/schedule_list.html -->
+{% extends 'irrigation/base.html' %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 class="page-title">Irrigation Schedules</h1>
+        <p class="page-subtitle">Manage all your irrigation schedules</p>
+    </div>
+    <a href="{% url 'irrigation:create_schedule' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        Add Schedule
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>All Schedules</span>
+        <div style="display: flex; gap: 1rem;">
+            <select onchange="filterSchedules()" id="statusFilter" class="form-control" style="width: auto;">
+                <option value="">All Status</option>
+                <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active</option>
+                <option value="paused" {% if current_status == 'paused' %}selected{% endif %}>Paused</option>
+                <option value="completed" {% if current_status == 'completed' %}selected{% endif %}>Completed</option>
+            </select>
+            <select onchange="filterSchedules()" id="zoneFilter" class="form-control" style="width: auto;">
+                <option value="">All Zones</option>
+                {% for zone in zones %}
+                <option value="{{ zone.id }}" {% if current_zone == zone.id|stringformat:"s" %}selected{% endif %}>{{ zone.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if schedules %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Schedule Name</th>
+                        <th>Zone</th>
+                        <th>Time</th>
+                        <th>Duration</th>
+                        <th>Frequency</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for schedule in schedules %}
+                    <tr>
+                        <td><strong>{{ schedule.name }}</strong></td>
+                        <td>{{ schedule.zone.name }}</td>
+                        <td>{{ schedule.start_time }}</td>
+                        <td>{{ schedule.duration_minutes }} min</td>
+                        <td>{{ schedule.get_frequency_display }}</td>
+                        <td>
+                            <span class="status-badge status-{{ schedule.status }}">
+                                {{ schedule.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                {% if schedule.status == 'active' %}
+                                    <button class="btn btn-outline" onclick="pauseSchedule({{ schedule.id }})">
+                                        <i class="fas fa-pause"></i>
+                                    </button>
+                                {% elif schedule.status == 'paused' %}
+                                    <button class="btn btn-outline" onclick="resumeSchedule({{ schedule.id }})">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                {% endif %}
+                                <button class="btn btn-outline" onclick="editSchedule({{ schedule.id }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline" onclick="deleteSchedule({{ schedule.id }})" style="color: #dc3545;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h3>No Schedules Found</h3>
+                <p>Create your first irrigation schedule to get started.</p>
+                <a href="{% url 'irrigation:create_schedule' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                    <i class="fas fa-plus"></i>
+                    Create Schedule
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterSchedules() {
+    const status = document.getElementById('statusFilter').value;
+    const zone = document.getElementById('zoneFilter').value;
+    
+    let url = '{% url "irrigation:schedule_list" %}?';
+    if (status) url += 'status=' + status + '&';
+    if (zone) url += 'zone=' + zone + '&';
+    
+    window.location.href = url;
+}
+
+function pauseSchedule(id) {
+    if (confirm('Are you sure you want to pause this schedule?')) {
+        // AJAX call to pause schedule
+        console.log('Pausing schedule:', id);
+    }
+}
+
+function resumeSchedule(id) {
+    if (confirm('Are you sure you want to resume this schedule?')) {
+        // AJAX call to resume schedule
+        console.log('Resuming schedule:', id);
+    }
+}
+
+function editSchedule(id) {
+    window.location.href = '/irrigation/schedules/' + id + '/edit/';
+}
+
+function deleteSchedule(id) {
+    if (confirm('Are you sure you want to delete this schedule? This action cannot be undone.')) {
+        // AJAX call to delete schedule
+        console.log('Deleting schedule:', id);
+    }
+}
+</script>
+{% endblock %}

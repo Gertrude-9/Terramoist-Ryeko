@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Preferences - Terramoist</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --box-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            background-color: #f9f9f9;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+        
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-hover);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .preference-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            border-radius: var(--border-radius);
+        }
+        
+        .preference-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        .preference-card.active {
+            border-color: var(--primary-light);
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+        
+        .severity-badge {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            border-radius: 20px;
+        }
+        
+        .severity-badge:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        
+        .severity-badge.selected {
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3);
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+        }
+        
+        .nav-pills .nav-link:hover {
+            background-color: rgba(46, 125, 50, 0.1);
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+        }
+        
+        .form-range::-webkit-slider-thumb {
+            background-color: var(--primary-color);
+            width: 18px;
+            height: 18px;
+        }
+        
+        .form-range::-moz-range-thumb {
+            background-color: var(--primary-color);
+            width: 18px;
+            height: 18px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .btn-success {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-success:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .alert {
+            border-radius: var(--border-radius);
+        }
+        
+        .alert-success {
+            background-color: rgba(46, 125, 50, 0.1);
+            border-color: rgba(46, 125, 50, 0.2);
+            color: var(--primary-dark);
+        }
+        
+        .alert-info {
+            background-color: rgba(2, 136, 209, 0.1);
+            border-color: rgba(2, 136, 209, 0.2);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            color: #222;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .text-muted {
+            color: #6c757d !important;
+        }
+        
+        #saveSuccess {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        #saveSuccess.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#dashboard">
+                <i class="fas fa-seedling me-2"></i>Terramoist
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="#dashboard">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0"><i class="fas fa-cog me-2 text-success"></i>AI Preferences</h1>
+                    <div class="alert alert-success d-none" id="saveSuccess">
+                        <i class="fas fa-check-circle me-2"></i>Preferences saved successfully!
+                    </div>
+                </div>
+                <hr class="mb-4">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3">
+                <!-- Navigation Pills -->
+                <div class="nav flex-column nav-pills mb-4" id="preferences-tab">
+                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#general">
+                        <i class="fas fa-sliders-h me-2"></i>General Settings
+                    </button>
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#notifications">
+                        <i class="fas fa-bell me-2"></i>Notifications
+                    </button>
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#insights">
+                        <i class="fas fa-lightbulb me-2"></i>Insight Generation
+                    </button>
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#thresholds">
+                        <i class="fas fa-thermometer-half me-2"></i>Thresholds
+                    </button>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <form id="preferencesForm">
+                    <div class="tab-content">
+                        <!-- General Settings -->
+                        <div class="tab-pane fade show active" id="general">
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-sliders-h me-2 text-success"></i>General AI Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-4">
+                                                <label class="form-label">AI Response Style</label>
+                                                <select class="form-select" name="response_style">
+                                                    <option value="detailed">Detailed</option>
+                                                    <option value="concise" selected>Concise</option>
+                                                    <option value="technical">Technical</option>
+                                                </select>
+                                                <small class="form-text text-muted">How detailed should AI responses be</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-4">
+                                                <label class="form-label">Insight Frequency</label>
+                                                <select class="form-select" name="insight_frequency">
+                                                    <option value="realtime">Real-time</option>
+                                                    <option value="hourly" selected>Hourly</option>
+                                                    <option value="daily">Daily</option>
+                                                    <option value="weekly">Weekly</option>
+                                                </select>
+                                                <small class="form-text text-muted">How often to generate new insights</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label">Auto-generate Insights</label>
+                                        <div class="d-flex align-items-center">
+                                            <label class="toggle-switch me-3">
+                                                <input type="checkbox" name="auto_generate" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                            <small class="text-muted">Automatically generate insights based on sensor data</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Maximum Insights per Sensor</label>
+                                        <input type="range" class="form-range mb-2" min="1" max="10" value="5" name="max_insights_per_sensor" id="maxInsightsRange">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Min</small>
+                                            <span id="maxInsightsValue" class="badge bg-success bg-opacity-10 text-success px-3 py-1">5</span>
+                                            <small class="text-muted">Max</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notifications -->
+                        <div class="tab-pane fade" id="notifications">
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-bell me-2 text-success"></i>Notification Preferences</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="mb-3 text-success">Notification Types</h6>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="notify_critical" checked>
+                                                <label class="form-check-label">Critical Alerts</label>
+                                                <small class="form-text text-muted d-block">Immediate notifications for critical issues</small>
+                                            </div>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="notify_warnings" checked>
+                                                <label class="form-check-label">Warnings</label>
+                                                <small class="form-text text-muted d-block">Notifications for potential issues</small>
+                                            </div>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="notify_recommendations">
+                                                <label class="form-check-label">Recommendations</label>
+                                                <small class="form-text text-muted d-block">AI-generated improvement suggestions</small>
+                                            </div>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="notify_insights">
+                                                <label class="form-check-label">New Insights</label>
+                                                <small class="form-text text-muted d-block">Periodic insight summaries</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="mb-3 text-success">Delivery Methods</h6>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="delivery_dashboard" checked>
+                                                <label class="form-check-label">Dashboard</label>
+                                                <small class="form-text text-muted d-block">Show in the Terramoist dashboard</small>
+                                            </div>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="delivery_email">
+                                                <label class="form-check-label">Email</label>
+                                                <small class="form-text text-muted d-block">Send to your registered email</small>
+                                            </div>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" name="delivery_sms">
+                                                <label class="form-check-label">SMS</label>
+                                                <small class="form-text text-muted d-block">Text messages to your phone</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Insight Generation -->
+                        <div class="tab-pane fade" id="insights">
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2 text-success"></i>Insight Generation Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <label class="form-label">Preferred Insight Categories</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" name="category_watering" checked>
+                                                    <label class="form-check-label">Watering Recommendations</label>
+                                                    <small class="form-text text-muted d-block">Optimal watering schedules</small>
+                                                </div>
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" name="category_fertilizing" checked>
+                                                    <label class="form-check-label">Fertilizing Advice</label>
+                                                    <small class="form-text text-muted d-block">Nutrient and fertilization guidance</small>
+                                                </div>
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" name="category_environmental">
+                                                    <label class="form-check-label">Environmental Conditions</label>
+                                                    <small class="form-text text-muted d-block">Light, humidity, and air quality</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" name="category_disease" checked>
+                                                    <label class="form-check-label">Disease Prevention</label>
+                                                    <small class="form-text text-muted d-block">Early signs and prevention</small>
+                                                </div>
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" name="category_growth">
+                                                    <label class="form-check-label">Growth Optimization</label>
+                                                    <small class="form-text text-muted d-block">Tips for maximizing growth</small>
+                                                </div>
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" name="category_maintenance">
+                                                    <label class="form-check-label">Maintenance Reminders</label>
+                                                    <small class="form-text text-muted d-block">Pruning and general care</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">Insight Priority Filter</label>
+                                        <div class="d-flex gap-2 mb-2">
+                                            <span class="badge bg-danger severity-badge selected" data-severity="high">High Priority</span>
+                                            <span class="badge bg-warning severity-badge selected" data-severity="medium">Medium Priority</span>
+                                            <span class="badge bg-info severity-badge" data-severity="low">Low Priority</span>
+                                        </div>
+                                        <small class="form-text text-muted">Select which priority levels to show in your dashboard</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">AI Confidence Threshold</label>
+                                        <input type="range" class="form-range mb-2" min="50" max="100" value="80" name="confidence_threshold" id="confidenceRange">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Low</small>
+                                            <span id="confidenceValue" class="badge bg-success bg-opacity-10 text-success px-3 py-1">80%</span>
+                                            <small class="text-muted">High</small>
+                                        </div>
+                                        <small class="form-text text-muted">Only show insights with confidence above this threshold</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thresholds -->
+                        <div class="tab-pane fade" id="thresholds">
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0"><i class="fas fa-thermometer-half me-2 text-success"></i>Alert Thresholds</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="mb-3 text-success">Moisture Levels (%)</h6>
+                                            <div class="mb-3">
+                                                <label class="form-label">Critical Low</label>
+                                                <input type="number" class="form-control" name="moisture_critical_low" value="20" min="0" max="100">
+                                                <small class="form-text text-muted">Triggers emergency alerts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Optimal Min</label>
+                                                <input type="number" class="form-control" name="moisture_optimal_min" value="40" min="0" max="100">
+                                                <small class="form-text text-muted">Minimum recommended moisture</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Optimal Max</label>
+                                                <input type="number" class="form-control" name="moisture_optimal_max" value="70" min="0" max="100">
+                                                <small class="form-text text-muted">Maximum recommended moisture</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="mb-3 text-success">Temperature (°C)</h6>
+                                            <div class="mb-3">
+                                                <label class="form-label">Critical Low</label>
+                                                <input type="number" class="form-control" name="temp_critical_low" value="5" min="-10" max="50">
+                                                <small class="form-text text-muted">Triggers emergency alerts</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Optimal Min</label>
+                                                <input type="number" class="form-control" name="temp_optimal_min" value="18" min="-10" max="50">
+                                                <small class="form-text text-muted">Minimum recommended temperature</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Optimal Max</label>
+                                                <input type="number" class="form-control" name="temp_optimal_max" value="25" min="-10" max="50">
+                                                <small class="form-text text-muted">Maximum recommended temperature</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="text-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary me-2" id="resetBtn">
+                            <i class="fas fa-undo me-1"></i>Reset to Defaults
+                        </button>
+                        <button type="submit" class="btn btn-success" id="saveBtn">
+                            <i class="fas fa-save me-1"></i>Save Preferences
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Updated Dashboard Page -->
+    <div id="dashboard-page" style="display: none;">
+        <div class="container-fluid py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0"><i class="fas fa-brain me-2 text-success"></i>AI Insights Dashboard</h1>
+                <div>
+                    <button class="btn btn-outline-success" onclick="showPreferences()">
+                        <i class="fas fa-cog me-1"></i>AI Preferences
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preferences Summary -->
+            <div class="row mb-4" id="preferencesSummary">
+                <div class="col-12">
+                    <div class="alert alert-info border-0 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Current AI Settings</h6>
+                            <button class="btn btn-sm btn-outline-info" onclick="showPreferences()">Edit</button>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-comment me-2 text-muted"></i>
+                                    <div>
+                                        <small class="d-block text-muted">Response Style</small>
+                                        <strong id="currentResponseStyle">Concise</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-clock me-2 text-muted"></i>
+                                    <div>
+                                        <small class="d-block text-muted">Frequency</small>
+                                        <strong id="currentFrequency">Hourly</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-bolt me-2 text-muted"></i>
+                                    <div>
+                                        <small class="d-block text-muted">Auto-generate</small>
+                                        <strong id="currentAutoGenerate">Enabled</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-chart-line me-2 text-muted"></i>
+                                    <div>
+                                        <small class="d-block text-muted">Max per Sensor</small>
+                                        <strong id="currentMaxInsights">5</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rest of dashboard content would go here -->
+            <div class="text-center py-5">
+                <div class="card shadow-sm border-0 py-4">
+                    <div class="card-body">
+                        <i class="fas fa-chart-pie fa-3x text-success mb-3"></i>
+                        <h3>Dashboard Content</h3>
+                        <p class="text-muted">Your AI preferences are now applied to the dashboard experience.</p>
+                        <button class="btn btn-success" onclick="showPreferences()">
+                            <i class="fas fa-cog me-1"></i>Modify Preferences
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simulated database storage
+        let preferences = {
+            response_style: 'concise',
+            insight_frequency: 'hourly',
+            auto_generate: true,
+            max_insights_per_sensor: 5,
+            notify_critical: true,
+            notify_warnings: true,
+            notify_recommendations: false,
+            notify_insights: false,
+            delivery_dashboard: true,
+            delivery_email: false,
+            delivery_sms: false,
+            category_watering: true,
+            category_fertilizing: true,
+            category_environmental: false,
+            category_disease: true,
+            category_growth: false,
+            category_maintenance: false,
+            priority_filter: ['high', 'medium'],
+            confidence_threshold: 80,
+            moisture_critical_low: 20,
+            moisture_optimal_min: 40,
+            moisture_optimal_max: 70,
+            temp_critical_low: 5,
+            temp_optimal_min: 18,
+            temp_optimal_max: 25
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPreferences();
+            updateRangeValues();
+            initializeSeverityBadges();
+        });
+
+        // Range slider updates
+        function updateRangeValues() {
+            const maxInsightsRange = document.getElementById('maxInsightsRange');
+            const maxInsightsValue = document.getElementById('maxInsightsValue');
+            const confidenceRange = document.getElementById('confidenceRange');
+            const confidenceValue = document.getElementById('confidenceValue');
+
+            maxInsightsRange.addEventListener('input', function() {
+                maxInsightsValue.textContent = this.value;
+            });
+
+            confidenceRange.addEventListener('input', function() {
+                confidenceValue.textContent = this.value + '%';
+            });
+        }
+
+        // Severity badge selection
+        function initializeSeverityBadges() {
+            document.querySelectorAll('.severity-badge').forEach(badge => {
+                badge.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+
+        // Load preferences from "database"
+        function loadPreferences() {
+            const form = document.getElementById('preferencesForm');
+            Object.keys(preferences).forEach(key => {
+                const element = form.querySelector(`[name="${key}"]`);
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        element.checked = preferences[key];
+                    } else if (element.type === 'range') {
+                        element.value = preferences[key];
+                        if (key === 'max_insights_per_sensor') {
+                            document.getElementById('maxInsightsValue').textContent = preferences[key];
+                        } else if (key === 'confidence_threshold') {
+                            document.getElementById('confidenceValue').textContent = preferences[key] + '%';
+                        }
+                    } else {
+                        element.value = preferences[key];
+                    }
+                }
+            });
+
+            // Set severity badges
+            document.querySelectorAll('.severity-badge').forEach(badge => {
+                const severity = badge.dataset.severity;
+                if (preferences.priority_filter && preferences.priority_filter.includes(severity)) {
+                    badge.classList.add('selected');
+                } else {
+                    badge.classList.remove('selected');
+                }
+            });
+
+            updateDashboardSummary();
+        }
+
+        // Save preferences to "database"
+        function savePreferences() {
+            const form = document.getElementById('preferencesForm');
+            const formData = new FormData(form);
+            
+            // Update preferences object
+            for (let [key, value] of formData.entries()) {
+                if (form.querySelector(`[name="${key}"]`).type === 'checkbox') {
+                    preferences[key] = true;
+                } else if (form.querySelector(`[name="${key}"]`).type === 'range' || 
+                          form.querySelector(`[name="${key}"]`).type === 'number') {
+                    preferences[key] = parseInt(value);
+                } else {
+                    preferences[key] = value;
+                }
+            }
+
+            // Handle unchecked checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                if (!formData.has(checkbox.name)) {
+                    preferences[checkbox.name] = false;
+                }
+            });
+
+            // Handle severity badges
+            const selectedSeverities = Array.from(document.querySelectorAll('.severity-badge.selected'))
+                .map(badge => badge.dataset.severity);
+            preferences.priority_filter = selectedSeverities;
+
+            // Simulate API call
+            console.log('Saving preferences to database:', preferences);
+            
+            // Show success message
+            const successAlert = document.getElementById('saveSuccess');
+            successAlert.classList.remove('d-none');
+            setTimeout(() => {
+                successAlert.classList.add('d-none');
+            }, 3000);
+
+            updateDashboardSummary();
+        }
+
+        // Update dashboard preferences summary
+        function updateDashboardSummary() {
+            document.getElementById('currentResponseStyle').textContent = 
+                preferences.response_style.charAt(0).toUpperCase() + preferences.response_style.slice(1);
+            document.getElementById('currentFrequency').textContent = 
+                preferences.insight_frequency.charAt(0).toUpperCase() + preferences.insight_frequency.slice(1);
+            document.getElementById('currentAutoGenerate').textContent = 
+                preferences.auto_generate ? 'Enabled' : 'Disabled';
+            document.getElementById('currentMaxInsights').textContent = 
+                preferences.max_insights_per_sensor;
+        }
+
+        // Form submission
+        document.getElementById('preferencesForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+            saveBtn.disabled = true;
+
+            setTimeout(() => {
+                savePreferences();
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save Preferences';
+                saveBtn.disabled = false;
+            }, 1000);
+        });
+
+        // Reset to defaults
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all preferences to default values?')) {
+                // Reset preferences to defaults
+                preferences = {
+                    response_style: 'concise',
+                    insight_frequency: 'hourly',
+                    auto_generate: true,
+                    max_insights_per_sensor: 5,
+                    notify_critical: true,
+                    notify_warnings: true,
+                    notify_recommendations: false,
+                    notify_insights: false,
+                    delivery_dashboard: true,
+                    delivery_email: false,
+                    delivery_sms: false,
+                    category_watering: true,
+                    category_fertilizing: true,
+                    category_environmental: false,
+                    category_disease: true,
+                    category_growth: false,
+                    category_maintenance: false,
+                    priority_filter: ['high', 'medium'],
+                    confidence_threshold: 80,
+                    moisture_critical_low: 20,
+                    moisture_optimal_min: 40,
+                    moisture_optimal_max: 70,
+                    temp_critical_low: 5,
+                    temp_optimal_min: 18,
+                    temp_optimal_max: 25
+                };
+                loadPreferences();
+            }
+        });
+
+        // Navigation functions
+        function showPreferences() {
+            document.querySelector('.container').style.display = 'block';
+            document.getElementById('dashboard-page').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('dashboard-page').style.display = 'block';
+        }
+
+        // Add click handlers for navigation
+        document.querySelector('a[href="#dashboard"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            showDashboard();
+        });
+    </script>
+</body>
+</html>

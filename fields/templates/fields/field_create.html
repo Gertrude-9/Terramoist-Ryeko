@@ -1,0 +1,388 @@
+{% extends 'fields/base.html' %} {# Assuming you have a base.html template #}
+
+{% block content %}
+<style>
+    /* Form container */
+.form-container {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header */
+.form-header h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #333;
+}
+
+.form-header p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+/* Labels */
+.form-group label {
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #444;
+}
+
+/* Required asterisk */
+.required {
+    color: #d9534f;
+    margin-left: 0.25rem;
+}
+
+/* Inputs, selects, textareas */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+    outline: none;
+}
+
+/* Help text */
+.help-text {
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: 0.25rem;
+}
+
+/* Error messages */
+.error {
+    font-size: 0.85rem;
+    color: #d9534f;
+    margin-top: 0.25rem;
+}
+
+/* Form rows: display side by side on larger screens */
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.btn i {
+    margin-right: 0.5rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Alert messages */
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Checkbox (Active Field) inline with label */
+.form-group label > input[type="checkbox"] {
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Geometry textarea taller for GeoJSON */
+.form-group textarea {
+    min-height: 120px;
+}
+
+/* Smooth transitions for dynamic elements */
+.form-group,
+.alert {
+    transition: all 0.3s ease;
+}
+
+/* Add some margin to get location button */
+.btn-secondary {
+    margin-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+    }
+}
+
+</style>
+<div class="form-container">
+    <div class="form-header">
+        <h1>Create New Field</h1>
+        <p>Add a new field to your farm for monitoring and management</p>
+    </div>
+    
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <!-- Display form errors -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+        
+        <!-- Farm Selection -->
+        <div class="form-group">
+            <label for="{{ form.farm.id_for_label }}">
+                Farm <span class="required">*</span>
+            </label>
+            {{ form.farm }}
+            {% if form.farm.errors %}
+                <div class="error">{{ form.farm.errors.0 }}</div>
+            {% endif %}
+            <div class="help-text">Select the farm where this field is located</div>
+        </div>
+        
+        <!-- Field Name -->
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">
+                Field Name <span class="required">*</span>
+            </label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="error">{{ form.name.errors.0 }}</div>
+            {% endif %}
+            <div class="help-text">Enter a descriptive name for this field</div>
+        </div>
+        
+        <!-- Location Details -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.latitude.id_for_label }}">
+                    Latitude
+                </label>
+                {{ form.latitude }}
+                {% if form.latitude.errors %}
+                    <div class="error">{{ form.latitude.errors.0 }}</div>
+                {% endif %}
+                <div class="help-text">GPS latitude coordinate</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.longitude.id_for_label }}">
+                    Longitude
+                </label>
+                {{ form.longitude }}
+                {% if form.longitude.errors %}
+                    <div class="error">{{ form.longitude.errors.0 }}</div>
+                {% endif %}
+                <div class="help-text">GPS longitude coordinate</div>
+            </div>
+        </div>
+        
+        <!-- Area and Crop Type -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.area.id_for_label }}">
+                    Area (hectares)
+                </label>
+                {{ form.area }}
+                {% if form.area.errors %}
+                    <div class="error">{{ form.area.errors.0 }}</div>
+                {% endif %}
+                <div class="help-text">Field area in hectares</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.crop_type.id_for_label }}">
+                    Crop Type
+                </label>
+                {{ form.crop_type }}
+                {% if form.crop_type.errors %}
+                    <div class="error">{{ form.crop_type.errors.0 }}</div>
+                {% endif %}
+                <div class="help-text">Type of crop grown in this field</div>
+            </div>
+        </div>
+        
+        <!-- Soil Type -->
+        <div class="form-group">
+            <label for="{{ form.soil_type.id_for_label }}">
+                Soil Type
+            </label>
+            {{ form.soil_type }}
+            {% if form.soil_type.errors %}
+                <div class="error">{{ form.soil_type.errors.0 }}</div>
+            {% endif %}
+            <div class="help-text">Predominant soil type in this field</div>
+        </div>
+        
+        <!-- Description -->
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">
+                Description
+            </label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <div class="error">{{ form.description.errors.0 }}</div>
+            {% endif %}
+            <div class="help-text">Additional notes or description about this field</div>
+        </div>
+        
+        <!-- Irrigation System -->
+        <div class="form-group">
+            <label for="{{ form.irrigation_system.id_for_label }}">
+                Irrigation System
+            </label>
+            {{ form.irrigation_system }}
+            {% if form.irrigation_system.errors %}
+                <div class="error">{{ form.irrigation_system.errors.0 }}</div>
+            {% endif %}
+            <div class="help-text">Type of irrigation system used</div>
+        </div>
+        
+        <!-- Active Status -->
+        <div class="form-group">
+            <label>
+                {{ form.is_active }} Active Field
+            </label>
+            {% if form.is_active.errors %}
+                <div class="error">{{ form.is_active.errors.0 }}</div>
+            {% endif %}
+            <div class="help-text">Check if this field is currently active for monitoring</div>
+        </div>
+        
+        <!-- Planting Date -->
+        <div class="form-group">
+            <label for="{{ form.planting_date.id_for_label }}">
+                Planting Date
+            </label>
+            {{ form.planting_date }}
+            {% if form.planting_date.errors %}
+                <div class="error">{{ form.planting_date.errors.0 }}</div>
+            {% endif %}
+            <div class="help-text">Date when crops were planted in this field</div>
+        </div>
+
+        <!-- Geometry -->
+        <div class="form-group">
+            <label for="{{ form.geometry.id_for_label }}">
+                Geometry (GeoJSON)
+            </label>
+            {{ form.geometry }}
+            {% if form.geometry.errors %}
+                <div class="error">{{ form.geometry.errors.0 }}</div>
+            {% endif %}
+            <div class="help-text">GeoJSON or other spatial data representing the field boundary</div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="form-group" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create Field
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock content %} {# Explicitly closing the content block #}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add any client-side validation or dynamic behavior here
+    
+    // Example: Auto-focus first field
+    const firstInput = document.querySelector('input, select');
+    if (firstInput) {
+        firstInput.focus();
+    }
+    
+    // Example: GPS location helper
+    if (navigator.geolocation) {
+        const getLocationBtn = document.createElement('button');
+        getLocationBtn.type = 'button';
+        getLocationBtn.className = 'btn btn-secondary';
+        getLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location';
+        getLocationBtn.style.marginTop = '0.5rem';
+        
+        getLocationBtn.addEventListener('click', function() {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('{{ form.latitude.id_for_label }}').value = position.coords.latitude.toFixed(6);
+                document.getElementById('{{ form.longitude.id_for_label }}').value = position.coords.longitude.toFixed(6);
+            }, function(error) {
+                // Use a custom message box instead of alert()
+                const errorMessage = 'Unable to get your location: ' + error.message;
+                // You would typically implement a custom modal or toast notification here.
+                // For demonstration, a console log or a div update could be used.
+                console.error(errorMessage);
+                // Example of a simple message div (you'd need to add this div to your HTML)
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.textContent = errorMessage;
+                document.querySelector('.form-container').prepend(messageDiv);
+                setTimeout(() => messageDiv.remove(), 5000); // Remove after 5 seconds
+            });
+        });
+        
+        // Add button after longitude field
+        const longitudeGroup = document.getElementById('{{ form.longitude.id_for_label }}').closest('.form-group');
+        if (longitudeGroup) {
+            longitudeGroup.appendChild(getLocationBtn);
+        }
+    }
+});
+</script>
+{% endblock extra_js %} {# Explicitly closing the extra_js block #}

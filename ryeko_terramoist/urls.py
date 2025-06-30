@@ -23,8 +23,13 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('users.urls')),
-    path('fields', include('fields.urls')),
+    path('fields/', include('fields.urls')),
+    # path('fields/', include('fields.urls')),
     path('data_collection/', include('data_collection.urls')),
+    path('irrigation/', include('irrigation.urls', namespace='irrigation')), 
+    path('predictions/', include('predictions.urls', namespace='predictions')), 
+    # path('analysis/', include('soil_analysis.urls', namespace='soil_analysis')),
+    # path('api/sensors/', include('sensors.urls')),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     
 

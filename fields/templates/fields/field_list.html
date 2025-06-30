@@ -1,0 +1,384 @@
+<!-- templates/fields/fields_list.html -->
+{% extends 'fields/base.html' %}
+
+{% block title %}All Fields - Farm Fields Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="fas fa-map me-2"></i>All Fields</h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'fields:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Fields</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-map fa-2x me-3"></i>
+                    <div>
+                        <h6 class="card-title mb-0">Total Fields</h6>
+                        <h4 class="mb-0">{{ fields.count }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-expand-arrows-alt fa-2x me-3"></i>
+                    <div>
+                        <h6 class="card-title mb-0">Total Area</h6>
+                        <h4 class="mb-0">{{ total_area|floatformat:1 }} ha</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-broadcast-tower fa-2x me-3"></i>
+                    <div>
+                        <h6 class="card-title mb-0">Active Sensors</h6>
+                        <h4 class="mb-0">{{ total_sensors }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h6 class="card-title mb-0">Active Alerts</h6>
+                        <h4 class="mb-0">{{ total_alerts }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="farm" class="form-label">Farm</label>
+                <select name="farm" id="farm" class="form-select">
+                    <option value="">All Farms</option>
+                    {% for farm in farms %}
+                        <option value="{{ farm.id }}" {% if current_farm == farm.id|stringformat:"s" %}selected{% endif %}>
+                            {{ farm.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="crop_type" class="form-label">Crop Type</label>
+                <select name="crop_type" id="crop_type" class="form-select">
+                    <option value="">All Crops</option>
+                    {% for crop in crop_types %}
+                        <option value="{{ crop }}" {% if current_crop == crop %}selected{% endif %}>
+                            {{ crop|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" name="search" id="search" class="form-control" 
+                       placeholder="Field name..." value="{{ current_search }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'fields:field_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Fields Grid -->
+<div class="row">
+    {% for field in fields %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card field-card h-100 {% if field.alerts_count > 0 %}border-warning{% endif %}">
+                {% if field.alerts_count > 0 %}
+                    <div class="card-header bg-warning text-dark">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        {{ field.alerts_count }} Active Alert{{ field.alerts_count|pluralize }}
+                    </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">{{ field.name }}</h5>
+                        <span class="badge bg-success">{{ field.farm.name }}</span>
+                    </div>
+                    
+                    <div class="field-info mb-3">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="info-item">
+                                    <i class="fas fa-expand-arrows-alt text-primary"></i>
+                                    <div class="small text-muted">Area</div>
+                                    <div class="fw-bold">{{ field.area_hectares }} ha</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="info-item">
+                                    <i class="fas fa-broadcast-tower text-success"></i>
+                                    <div class="small text-muted">Sensors</div>
+                                    <div class="fw-bold">{{ field.sensors_count }}</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="info-item">
+                                    <i class="fas fa-seedling text-info"></i>
+                                    <div class="small text-muted">Crop</div>
+                                    <div class="fw-bold small">{{ field.crop_type|default:"N/A"|truncatechars:8 }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sensor Summary -->
+                    {% if field.sensor_summary %}
+                        <div class="sensor-summary mb-3">
+                            <h6 class="small text-muted mb-2">Latest Sensor Readings:</h6>
+                            <div class="row">
+                                {% for sensor_type, data in field.sensor_summary.items %}
+                                    <div class="col-4">
+                                        <div class="sensor-reading text-center">
+                                            {% if sensor_type == 'humidity' %}
+                                                <i class="fas fa-tint text-primary"></i>
+                                            {% elif sensor_type == 'temperature' %}
+                                                <i class="fas fa-thermometer-half text-danger"></i>
+                                            {% elif sensor_type == 'soil_moisture' %}
+                                                <i class="fas fa-seedling text-success"></i>
+                                            {% endif %}
+                                            <div class="small">
+                                                {% if data.value %}
+                                                    <span class="fw-bold">{{ data.value }}{{ data.unit }}</span>
+                                                    <div class="text-muted" style="font-size: 0.7rem;">
+                                                        {{ data.time_ago }}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">No data</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Field Status Indicators -->
+                    <div class="status-indicators mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="status-item">
+                                    {% if field.sensors_count > 0 %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle"></i> Monitored
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-times-circle"></i> No Sensors
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-6 text-end">
+                                {% if field.latest_reading_time %}
+                                    <small class="text-muted">
+                                        Last update: {{ field.latest_reading_time|timesince }} ago
+                                    </small>
+                                {% else %}
+                                    <small class="text-muted">No recent data</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'fields:field_detail' field.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        {% if field.alerts_count > 0 %}
+                            <a href="{% url 'fields:alerts' %}?field={{ field.id }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-exclamation-triangle"></i> View Alerts
+                            </a>
+                        {% else %}
+                            <small class="text-muted align-self-center">
+                                <i class="fas fa-check-circle text-success"></i> All good
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-map fa-3x text-muted mb-3"></i>
+                    <h4>No fields found</h4>
+                    <p class="text-muted">
+                        {% if current_search or current_farm or current_crop %}
+                            No fields match your current filters. Try adjusting your search criteria.
+                        {% else %}
+                            You don't have any fields yet. Create your first field to start monitoring.
+                        {% endif %}
+                    </p>
+                    {% if current_search or current_farm or current_crop %}
+                        <a href="{% url 'fields:field_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-times"></i> Clear Filters
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+    <nav aria-label="Fields pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if current_search %}search={{ current_search }}&{% endif %}{% if current_farm %}farm={{ current_farm }}&{% endif %}{% if current_crop %}crop_type={{ current_crop }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if current_search %}search={{ current_search }}&{% endif %}{% if current_farm %}farm={{ current_farm }}&{% endif %}{% if current_crop %}crop_type={{ current_crop }}&{% endif %}page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if current_search %}search={{ current_search }}&{% endif %}{% if current_farm %}farm={{ current_farm }}&{% endif %}{% if current_crop %}crop_type={{ current_crop }}&{% endif %}page={{ page_obj.next_page_number }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh sensor data every 30 seconds
+setInterval(function() {
+    // Only refresh if user hasn't interacted recently
+    if (document.visibilityState === 'visible') {
+        const lastActivity = localStorage.getItem('lastActivity');
+        const now = Date.now();
+        
+        if (!lastActivity || (now - parseInt(lastActivity)) > 30000) {
+            location.reload();
+        }
+    }
+}, 30000);
+
+// Track user activity
+document.addEventListener('click', function() {
+    localStorage.setItem('lastActivity', Date.now());
+});
+
+document.addEventListener('keypress', function() {
+    localStorage.setItem('lastActivity', Date.now());
+});
+
+// Enhanced card hover effects
+document.querySelectorAll('.field-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-5px)';
+        this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '';
+    });
+});
+</script>
+
+<style>
+.field-card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+}
+
+.field-card:hover {
+    border-color: #28a745;
+}
+
+.info-item {
+    padding: 0.5rem 0;
+}
+
+.info-item i {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+}
+
+.sensor-reading {
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    background-color: #f8f9fa;
+    margin-bottom: 0.25rem;
+}
+
+.status-indicators .badge {
+    font-size: 0.75rem;
+}
+
+.sensor-summary {
+    border-top: 1px solid #eee;
+    padding-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .field-card .row {
+        text-align: center;
+    }
+    
+    .card-footer .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

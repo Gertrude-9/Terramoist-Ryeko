@@ -1,0 +1,238 @@
+<!-- templates/fields/field_detail.html -->
+{% extends 'fields/base.html' %}
+
+{% block title %}{{ field.name }} - Field Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ field.name }}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'fields:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">{{ field.name }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-map me-2"></i>Field Map & Sensors</h5>
+            </div>
+            <div class="card-body">
+                <div class="field-map" id="fieldMap">
+                    {% for data in sensor_data %}
+                        <div class="sensor-marker sensor-{{ data.sensor.sensor_type.name }}"
+                             style="left: {{ data.sensor.position_x|floatformat:2 }}%; top: {{ data.sensor.position_y|floatformat:2 }}%;"
+                             data-bs-toggle="tooltip"
+                             title="{{ data.sensor.sensor_type.name|title }}: {{ data.latest_reading.value|default:'No data' }} {{ data.sensor.sensor_type.unit }}"
+                             onclick="showSensorChart('{{ data.sensor.id }}')">
+                            {% if data.sensor.sensor_type.name == 'humidity' %}
+                                <i class="fas fa-tint"></i>
+                            {% elif data.sensor.sensor_type.name == 'temperature' %}
+                                <i class="fas fa-thermometer-half"></i>
+                            {% elif data.sensor.sensor_type.name == 'soil_moisture' %}
+                                <i class="fas fa-seedling"></i>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <span class="sensor-marker sensor-humidity d-inline-block me-2" style="position: static; width: 20px; height: 20px;">
+                            <i class="fas fa-tint"></i>
+                        </span> Humidity
+                        <span class="sensor-marker sensor-temperature d-inline-block me-2 ms-3" style="position: static; width: 20px; height: 20px;">
+                            <i class="fas fa-thermometer-half"></i>
+                        </span> Temperature
+                        <span class="sensor-marker sensor-soil_moisture d-inline-block me-2 ms-3" style="position: static; width: 20px; height: 20px;">
+                            <i class="fas fa-seedling"></i>
+                        </span> Soil Moisture
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Field Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Farm:</strong> {{ field.farm.name }}</p>
+                <p><strong>Area:</strong> {{ field.area_hectares }} hectares</p>
+                <p><strong>Crop:</strong> {{ field.crop_type|default:"Not specified" }}</p>
+                <p><strong>Active Sensors:</strong> {{ sensor_data|length }}</p>
+                <p><strong>Active Alerts:</strong> 
+                    <span class="badge bg-warning">{{ active_alerts.count }}</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-line me-2"></i>Sensor Data</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="sensorChart"></canvas>
+                </div>
+                <div class="row">
+                    {% for data in sensor_data %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card sensor-card">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        {{ data.sensor.sensor_type.name|title }} Sensor
+                                        {% if data.active_alerts %}
+                                            <span class="badge bg-danger">{{ data.active_alerts }}</span>
+                                        {% endif %}
+                                    </h6>
+                                    <p class="card-text">
+                                        <strong>Latest Reading:</strong><br>
+                                        {% if data.latest_reading %}
+                                            {{ data.latest_reading.value }} {{ data.sensor.sensor_type.unit }}
+                                            <br><small class="text-muted">{{ data.latest_reading.timestamp|timesince }} ago</small>
+                                        {% else %}
+                                            <span class="text-muted">No data available</span>
+                                        {% endif %}
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Position: ({{ data.sensor.position_x }}, {{ data.sensor.position_y }})
+                                        </small>
+                                    </p>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="showSensorChart('{{ data.sensor.id }}')">
+                                        View Chart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if active_alerts %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Active Alerts</h5>
+            </div>
+            <div class="card-body">
+                {% for alert in active_alerts %}
+                    <div class="alert alert-{{ alert.severity }} d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ alert.sensor.sensor_type.name|title }} Alert:</strong>
+                            {{ alert.message }}
+                            <br><small class="text-muted">{{ alert.created_at|timesince }} ago</small>
+                        </div>
+                        <a href="{% url 'fields:resolve_alert' alert.id %}" class="btn btn-sm btn-success">
+                            Mark Resolved
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentChart = null;
+
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+});
+
+function showSensorChart(sensorId) {
+    fetch(`/api/sensor/${sensorId}/readings/?hours=24`)
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('sensorChart').getContext('2d');
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            
+            const labels = data.readings.map(r => new Date(r.timestamp).toLocaleTimeString());
+            const values = data.readings.map(r => r.value);
+            
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.reverse(),
+                    datasets: [{
+                        label: `${data.sensor_type} (${data.unit})`,
+                        data: values.reverse(),
+                        borderColor: getSensorColor(data.sensor_type),
+                        backgroundColor: getSensorColor(data.sensor_type) + '20',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: data.unit
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${data.sensor_type} Sensor - Last 24 Hours`
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading sensor data:', error);
+            alert('Error loading sensor data');
+        });
+}
+
+function getSensorColor(sensorType) {
+    const colors = {
+        'humidity': '#007bff',
+        'temperature': '#fd7e14',
+        'soil_moisture': '#6f42c1'
+    };
+    return colors[sensorType] || '#28a745';
+}
+
+// Load first sensor chart on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const firstSensor = document.querySelector('.sensor-marker');
+    if (firstSensor) {
+        const sensorId = firstSensor.getAttribute('onclick').match(/'([^']+)'/)[1];
+        showSensorChart(sensorId);
+    }
+});
+</script>
+{% endblock %}

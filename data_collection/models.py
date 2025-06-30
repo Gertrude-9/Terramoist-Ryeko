@@ -2,12 +2,14 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from django.conf import settings
+
 User = get_user_model()
 
 class Farm(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='data_collection_farms')
     size = models.DecimalField(max_digits=10, decimal_places=2)  # in hectares
     created_at = models.DateTimeField(auto_now_add=True)
 

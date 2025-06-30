@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Field - {{ field.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Confirm Delete
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Warning:</strong> This action cannot be undone!
+                    </div>
+                    
+                    <p>Are you sure you want to delete the field <strong>"{{ field.name }}"</strong>?</p>
+                    
+                    <div class="field-info mb-3">
+                        <h6>Field Details:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Farm:</strong> {{ field.farm.name }}</li>
+                            <li><strong>Area:</strong> {% if field.area %}{{ field.area }} hectares{% else %}Not specified{% endif %}</li>
+                            <li><strong>Crop Type:</strong> {{ field.crop_type|default:"Not specified" }}</li>
+                            <li><strong>Active Sensors:</strong> {{ field.sensors.count }}</li>
+                        </ul>
+                    </div>
+                    
+                    {% if field.sensors.exists %}
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> This field has {{ field.sensors.count }} sensor(s) associated with it. 
+                        Deleting this field will also remove all sensor data and alerts.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Yes, Delete Field
+                        </button>
+                    </form>
+                    
+                    <a href="{% url 'field_detail' field.id %}" class="btn btn-secondary ml-2">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.field-info {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    border-left: 4px solid #007bff;
+}
+
+.field-info ul li {
+    padding: 0.2rem 0;
+}
+</style>
+{% endblock %}

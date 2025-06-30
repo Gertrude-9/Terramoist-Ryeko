@@ -1,0 +1,124 @@
+<!-- templates/irrigation/create_schedule.html -->
+{% extends 'irrigation/base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Create Irrigation Schedule</h1>
+    <p class="page-subtitle">Set up automated irrigation for your zones</p>
+</div>
+
+<div class="card">
+    <div class="card-header">Schedule Details</div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="grid grid-2">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label" for="name">Schedule Name</label>
+                        <input type="text" id="name" name="name" class="form-control" required 
+                               placeholder="e.g., Morning Garden Watering">
+                    </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="zone">Irrigation Zone</label>
+                    <select id="zone" name="zone" class="form-control" required>
+                        <option value="">Select a zone</option>
+                        <option value="1">Front Lawn (120 m²)</option>
+                        <option value="2">Backyard Garden (80 m²)</option>
+                        <option value="3">Vegetable Patch (45 m²)</option>
+                        <option value="4">Flower Beds (30 m²)</option>
+                        <option value="5">Greenhouse (25 m²)</option>
+                        <option value="6">Orchard (200 m²)</option>
+                        <option value="7">Hedges (60 m²)</option>
+                        <option value="8">Patio Planters (15 m²)</option>
+                    </select>
+                </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="start_time">Start Time</label>
+                        <input type="time" id="start_time" name="start_time" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="duration_minutes">Duration (minutes)</label>
+                        <input type="number" id="duration_minutes" name="duration_minutes" 
+                               class="form-control" min="1" max="480" required placeholder="30">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-group">
+                        <label class="form-label" for="frequency">Frequency</label>
+                        <select id="frequency" name="frequency" class="form-control" required>
+                            <option value="daily">Daily</option>
+                            <option value="every_other_day">Every Other Day</option>
+                            <option value="twice_weekly">Twice Weekly</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="start_date">Start Date</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="end_date">End Date (Optional)</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" name="auto_weather_adjust" id="auto_weather_adjust">
+                            Auto-adjust based on weather conditions
+                        </label>
+                        <small style="color: #6c757d; margin-left: 1.5rem;">
+                            Skip irrigation if rain is predicted or soil moisture is adequate
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Create Schedule
+                </button>
+                <a href="{% url 'irrigation:schedule_list' %}" class="btn btn-outline">
+                    Cancel
+                </a>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Set default start date to today
+document.getElementById('start_date').value = new Date().toISOString().split('T')[0];
+
+// Auto-populate schedule name based on zone selection
+document.getElementById('zone').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const nameField = document.getElementById('name');
+    
+    if (selectedOption.value && !nameField.value) {
+        const zoneName = selectedOption.text.split(' (')[0];
+        const time = document.getElementById('start_time').value || '06:00';
+        nameField.value = `${zoneName} - ${time} Schedule`;
+    }
+});
+
+document.getElementById('start_time').addEventListener('change', function() {
+    const zoneField = document.getElementById('zone');
+    const nameField = document.getElementById('name');
+    
+    if (zoneField.value && !nameField.value) {
+        const zoneName = zoneField.options[zoneField.selectedIndex].text.split(' (')[0];
+        nameField.value = `${zoneName} - ${this.value} Schedule`;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,430 @@
+{% extends 'fields/base.html' %}
+
+{% block title %}Farm Management Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex">
+    <!-- Enhanced Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h4 class="mb-0">
+                <i class="fas fa-seedling me-2"></i>Terramoist
+            </h4>
+        </div>
+        
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'fields:dashboard' %}">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'fields:field_list' %}">
+                        <i class="fas fa-map-marked-alt"></i> Field Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'fields:alerts' %}">
+                        <i class="fas fa-bell"></i> Alerts
+                        {% if active_alerts > 0 %}
+                        <span class="badge bg-danger rounded-pill">{{ active_alerts }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                
+                
+                {% for farm in farms %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'fields:farm_detail' farm.id %}">
+                        <i class="fas fa-tractor"></i> {{ farm.name }}
+                    </a>
+                </li>
+                {% empty %}
+                
+                {% endfor %}
+                
+                {% comment %} <li class="nav-item">
+                    <a class="nav-link" href="{% url 'fields:field_detail' field.id %}">
+                         <i class="fas fa-plus"></i> Feld Details
+                    </a>
+
+                </li>  {% endcomment %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'fields:field_create' %}">
+                        <i class="fas fa-plus"></i> New Field
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'fields:sensor_create' %}">
+                        <i class="fas fa-plus"></i> New Sensor
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Enhanced Main Content -->
+    <main class="main-content">
+        <!-- Enhanced Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex">
+                <button class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-download me-1"></i> Export
+                </button>
+                <button class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i> Quick Action
+                </button>
+            </div>
+        </div>
+        
+        <!-- Enhanced Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card stat-card-primary h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                                <i class="fas fa-tractor text-primary fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-uppercase text-muted mb-0">Total Farms</h6>
+                                <h3 class="mb-0">{{ farms.count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card stat-card-success h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                                <i class="fas fa-map-marked-alt text-success fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-uppercase text-muted mb-0">Fields</h6>
+                                <h3 class="mb-0">{{ total_fields }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card stat-card-info h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-info bg-opacity-10 p-3 rounded-3 me-3">
+                                <i class="fas fa-microchip text-info fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-uppercase text-muted mb-0">Sensors</h6>
+                                <h3 class="mb-0">{{ total_sensors }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card stat-card-warning h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                                <i class="fas fa-exclamation-triangle text-warning fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-uppercase text-muted mb-0">Alerts</h6>
+                                <h3 class="mb-0">{{ active_alerts }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Recent Alerts -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-bell me-2 text-danger"></i> Recent Alerts</h5>
+                <a href="{% url 'fields:alerts' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_alerts %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Sensor</th>
+                                <th>Type</th>
+                                <th>Message</th>
+                                <th>Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alert in recent_alerts %}
+                            <tr>
+                                <td><strong>{{ alert.field.name }}</strong></td>
+                                <td>{{ alert.sensor.name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ alert.get_severity_class }}">
+                                        {{ alert.get_alert_type_display }}
+                                    </span>
+                                </td>
+                                <td>{{ alert.message|truncatechars:40 }}</td>
+                                <td>{{ alert.timestamp|timesince }} ago</td>
+                                <td>
+                                    <a href="{% url 'fields:alert_detail' alert.id %}" class="btn btn-sm btn-outline-primary">Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5>No Recent Alerts</h5>
+                    <p class="text-muted">All systems are operating normally</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Enhanced Farm Overview -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-tractor me-2"></i> Farm Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if farms %}
+                            {% for farm in farms %}
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4>
+                                        <i class="fas fa-tractor text-primary me-2"></i>
+                                        {{ farm.name }}
+                                        <small class="text-muted">{{ farm.location }}</small>
+                                    </h4>
+                                    <a href="{% url 'fields:farm_detail' farm.id %}" class="btn btn-sm btn-outline-primary">
+                                        View Details <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                                
+                                <div class="row">
+                                    {% for field in farm.fields.all %}
+                                    <div class="col-md-6 col-xl-4 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between">
+                                                    <h5 class="card-title mb-1">{{ field.name }}</h5>
+                                                    {% if field.active_alerts > 0 %}
+                                                    <span class="badge bg-danger">{{ field.active_alerts }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                <p class="text-muted small mb-2">
+                                                    <i class="fas fa-expand-arrows-alt me-1"></i>
+                                                    {{ field.area }} m² • 
+                                                    <i class="fas fa-leaf me-1"></i>
+                                                    {{ field.crop_type|default:"No crop" }}
+                                                </p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <span class="badge bg-light text-dark">
+                                                            <i class="fas fa-microchip me-1"></i>
+                                                            {{ field.sensors.count }} sensors
+                                                        </span>
+                                                    </div>
+                                                    <a href="{% url 'fields:field_detail' field.id %}" class="btn btn-sm btn-primary">
+                                                        View <i class="fas fa-arrow-right ms-1"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div class="col-12">
+                                        <div class="alert alert-light">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No fields found for this farm. 
+                                            <a href="{% url 'fields:field_create' %}?farm={{ farm.id }}" class="alert-link">
+                                                Add your first field
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-tractor fa-4x text-muted mb-4"></i>
+                            <h4>No Farms Configured</h4>
+                            <p class="text-muted mb-4">Get started by adding your first farm</p>
+                            <a href="{% url 'fields:field_create' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i> Create Farm
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Enhanced Mobile sidebar toggle with animations
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarToggle = document.createElement('button');
+    sidebarToggle.className = 'sidebar-toggle d-lg-none';
+    sidebarToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    sidebarToggle.onclick = function() {
+        const sidebar = document.querySelector('.sidebar');
+        const backdrop = document.querySelector('.sidebar-backdrop') || createBackdrop();
+        
+        sidebar.classList.toggle('show');
+        
+        if (sidebar.classList.contains('show')) {
+            backdrop.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        } else {
+            backdrop.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    };
+    
+    function createBackdrop() {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'sidebar-backdrop';
+        backdrop.onclick = function() {
+            document.querySelector('.sidebar').classList.remove('show');
+            backdrop.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
+        document.body.appendChild(backdrop);
+        return backdrop;
+    }
+    
+    document.body.appendChild(sidebarToggle);
+    
+    // Add smooth scroll behavior
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Add loading state to buttons
+    document.querySelectorAll('.btn').forEach(button => {
+        button.addEventListener('click', function() {
+            if (!this.classList.contains('btn-outline-secondary')) {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Loading...';
+                this.disabled = true;
+                
+                // Reset after 2 seconds (you can adjust this based on your needs)
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 2000);
+            }
+        });
+    });
+    
+    // Add fade-in animation to cards
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Observe all cards for animation
+    document.querySelectorAll('.card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+    
+    // Add real-time clock
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        const dateString = now.toLocaleDateString();
+        
+        // You can add this to your header if you want
+        // const clockElement = document.querySelector('.clock');
+        // if (clockElement) {
+        //     clockElement.textContent = `${dateString} ${timeString}`;
+        // }
+    }
+    
+    // Update clock every second
+    setInterval(updateClock, 1000);
+    updateClock(); // Initial call
+    
+    // Add tooltip functionality for better UX
+    const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipElements.forEach(element => {
+        // You can initialize Bootstrap tooltips here if needed
+        element.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+        element.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Add keyboard navigation support
+    document.addEventListener('keydown', function(e) {
+        // ESC key to close sidebar on mobile
+        if (e.key === 'Escape') {
+            const sidebar = document.querySelector('.sidebar');
+            const backdrop = document.querySelector('.sidebar-backdrop');
+            if (sidebar && sidebar.classList.contains('show')) {
+                sidebar.classList.remove('show');
+                if (backdrop) {
+                    backdrop.style.display = 'none';
+                }
+                document.body.style.overflow = 'auto';
+            }
+        }
+    });
+    
+    // Add auto-refresh for dashboard data (optional)
+    // You can uncomment this if you want auto-refresh functionality
+    /*
+    setInterval(() => {
+        // Only refresh if user is active (not idle)
+        if (document.visibilityState === 'visible') {
+            // Add your refresh logic here
+            console.log('Auto-refreshing dashboard data...');
+        }
+    }, 30000); // Refresh every 30 seconds
+    */
+});
+</script>
+{% endblock %}

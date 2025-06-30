@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Farm Fields Management{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: #ffffff;
+      color: #000000; /* Black text for all content */
+    }
+    
+    /* White Sidebar */
+    .sidebar {
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      background-color: #ffffff; /* White background */
+      padding-top: 60px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+      border-right: 1px solid #e9ecef; /* Light border */
+    }
+    
+    /* Sidebar Links - Black by default */
+    .sidebar .nav-link {
+      color: #000000; /* Black text */
+      margin: 10px 15px;
+      padding: 8px 12px;
+      transition: all 0.2s ease;
+    }
+    
+    /* Green hover effect */
+    .sidebar .nav-link:hover {
+      background-color: #198754; /* Green background on hover */
+      color: #ffffff; /* White text on hover */
+      border-radius: 4px;
+    }
+    
+    /* Active link styling */
+    .sidebar .nav-link.active {
+      background-color: #198754; /* Green background */
+      color: #ffffff; /* White text */
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    
+    /* Main content area */
+    .content-area {
+      margin-left: 220px;
+      padding: 20px;
+      color: #000000; /* Ensure all text is black */
+    }
+    
+    /* Cards and other elements */
+    .sensor-card {
+      border-left: 4px solid #28a745;
+      transition: transform 0.2s;
+      color: #000000; /* Black text */
+    }
+    .sensor-card:hover {
+      transform: translateY(-2px);
+    }
+    
+    /* Alert colors */
+    .alert-high { border-left-color: #dc3545; }
+    .alert-medium { border-left-color: #ffc107; }
+    .alert-low { border-left-color: #17a2b8; }
+    
+    /* Field map styling */
+    .field-map {
+      min-height: 400px;
+      background: linear-gradient(45deg, #e8f5e8, #f0f8f0);
+      border: 2px solid #28a745;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Sensor markers */
+    .sensor-marker {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .sensor-marker:hover {
+      transform: scale(1.2);
+    }
+    .sensor-humidity { background-color: #007bff; }
+    .sensor-temperature { background-color: #fd7e14; }
+    .sensor-soil_moisture { background-color: #6f42c1; }
+    
+    /* Chart container */
+    .chart-container {
+      position: relative;
+      height: 500px;
+      margin: 50px 0;
+    }
+    
+    /* Additional styling for sidebar elements */
+    .sidebar-brand {
+      padding: 15px;
+      border-bottom: 1px solid #e9ecef;
+      margin-bottom: 15px;
+    }
+    
+    .sidebar-brand h4 {
+      color: #000000; /* Black text for brand */
+      font-weight: 600;
+    }
+    
+    .sidebar-divider {
+      height: 1px;
+      background-color: #e9ecef;
+      margin: 15px 0;
+    }
+    
+    .sidebar-heading {
+      color: #6c757d; /* Slightly muted for headings */
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 15px;
+      margin-bottom: 10px;
+    }
+    
+    /* Ensure all text in main content is black */
+    .content-area h1,
+    .content-area h2,
+    .content-area h3,
+    .content-area h4,
+    .content-area h5,
+    .content-area h6,
+    .content-area p,
+    .content-area span,
+    .content-area div {
+      color: #000000;
+    }
+    
+    /* Green buttons to match the hover effect */
+    .btn-primary {
+      background-color: #198754;
+      border-color: #198754;
+    }
+    
+    .btn-primary:hover {
+      background-color: #157347;
+      border-color: #146c43;
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% comment %} 
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'fields:dashboard' %}">
+        <i class="fas fa-seedling me-2"></i>Farm Fields
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'fields:dashboard' %}">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'fields:alerts' %}">Alerts</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <span class="navbar-text">Welcome, {{ user.username }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav> {% endcomment %}
+
+  <div class="sidebar d-flex flex-column p-3">
+    <a href="{% url 'fields:dashboard' %}" class="nav-link">
+      <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+    </a>
+    <a href="{% url 'fields:alerts' %}" class="nav-link">
+      <i class="fas fa-exclamation-triangle me-2"></i> Alerts
+    </a>
+    <a href="{% url 'fields:sensor_create' %}" class="nav-link">
+      <i class="fas fa-plus-circle me-2"></i> Add Sensor
+    </a>
+    <a href="#" class="nav-link">
+      <i class="fas fa-cog me-2"></i> Settings
+    </a>
+  </div>
+
+  <main class="content-area">
+    <div class="container mt-4">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

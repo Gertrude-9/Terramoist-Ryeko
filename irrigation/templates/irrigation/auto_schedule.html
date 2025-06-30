@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Irrigation Scheduling</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+           background: linear-gradient(135deg, #cccccc, #888888);
+
+
+            min-height: 100vh;
+            padding: 2rem;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4caf50 0%, #81c784 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #718096;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4caf50 0%, #81c784 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .bg-info {
+            background: linear-gradient(135deg, #63b3ed, #4299e1);
+            color: white;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-section {
+            padding: 2rem;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .zone-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .zone-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .zone-checkbox:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .zone-checkbox input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: #667eea;
+        }
+
+        .zone-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .results-section {
+            padding: 2rem;
+            background: linear-gradient(135deg, #f0fff4, #f7fafc);
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .preview-container {
+            min-height: 250px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #a0aec0;
+            padding: 2rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #cbd5e0;
+        }
+
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .schedule-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .zone-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .schedule-time {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .weather-forecast {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .forecast-day {
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .forecast-day:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .forecast-day.today {
+            background: linear-gradient(135deg, #e6fffa, #b2f5ea);
+            border-color: #81e6d9;
+        }
+
+        .day-header {
+            margin-bottom: 1rem;
+        }
+
+        .day-name {
+            display: block;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #2d3748;
+        }
+
+        .day-date {
+            display: block;
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 0.25rem;
+        }
+
+        .weather-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #4299e1;
+        }
+
+        .weather-details {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .temp-high {
+            color: #e53e3e;
+        }
+
+        .temp-low {
+            color: #3182ce;
+        }
+
+        .precip {
+            color: #319795;
+        }
+
+        .recommendation {
+            font-size: 0.8rem;
+            color: #4a5568;
+            font-weight: 500;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 0.5rem;
+        }
+
+        .subsection-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .zone-selection {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .weather-forecast {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .schedule-item {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-body {
+                padding: 1rem;
+            }
+
+            .form-section,
+            .results-section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title"> Irrigation Scheduling</h1>
+                <p class="page-subtitle">Automatically generate schedules based on weather and plant needs</p>
+            </div>
+            <a href="#" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="header-content">
+                    <i class="fas fa-magic"></i>
+                    <span>Auto Schedule Generator</span>
+                    <span class="badge bg-info">Beta</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-2">
+                    <div class="form-section">
+                        <h3 class="section-title">Configuration</h3>
+                        <form id="auto-schedule-form">
+                            <div class="form-group">
+                                <label for="schedule-type">Schedule Type</label>
+                                <select class="form-control" id="schedule-type" name="schedule_type">
+                                    <option value="weather">Based on Weather Forecast</option>
+                                    <option value="soil">Based on Soil Moisture</option>
+                                    <option value="plant">Based on Plant Type</option>
+                                    <option value="hybrid">Hybrid (All Factors)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="duration">Duration (Days)</label>
+                                <input type="number" class="form-control" id="duration" name="duration" min="1" max="14" value="7">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Zones to Include</label>
+                                <div class="zone-selection">
+                                    <div class="zone-checkbox">
+                                        <input type="checkbox" id="zone-1" name="zones" value="1" checked>
+                                        <label for="zone-1">Front Garden</label>
+                                    </div>
+                                    <div class="zone-checkbox">
+                                        <input type="checkbox" id="zone-2" name="zones" value="2" checked>
+                                        <label for="zone-2">Back Lawn</label>
+                                    </div>
+                                    <div class="zone-checkbox">
+                                        <input type="checkbox" id="zone-3" name="zones" value="3" checked>
+                                        <label for="zone-3">Vegetable Garden</label>
+                                    </div>
+                                    <div class="zone-checkbox">
+                                        <input type="checkbox" id="zone-4" name="zones" value="4">
+                                        <label for="zone-4">Flower Beds</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="water-saving">Water Saving Mode</label>
+                                <select class="form-control" id="water-saving" name="water_saving">
+                                    <option value="none">None</option>
+                                    <option value="moderate" selected>Moderate</option>
+                                    <option value="aggressive">Aggressive</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-magic"></i>
+                                    Generate Schedule
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="preview-btn">
+                                    <i class="fas fa-eye"></i>
+                                    Preview
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="results-section">
+                        <h3 class="section-title">Schedule Preview</h3>
+                        <div class="preview-container" id="preview-container">
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-alt"></i>
+                                <p>No schedule generated yet</p>
+                                <small>Configure options and click "Generate Schedule"</small>
+                            </div>
+                        </div>
+                        
+                        <div class="generated-schedules" id="generated-schedules" style="display: none;">
+                            <h4 class="subsection-title">Generated Schedules</h4>
+                            <div class="schedule-list" id="schedule-list">
+                                <!-- Generated schedules will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="header-content">
+                    <i class="fas fa-cloud-sun"></i>
+                    <span>Weather Forecast</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="weather-forecast">
+                    <div class="forecast-day today">
+                        <div class="day-header">
+                            <span class="day-name">Today</span>
+                            <span class="day-date">Jun 29</span>
+                        </div>
+                        <div class="weather-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <div class="weather-details">
+                            <span class="temp-high">28°C</span>
+                            <span class="temp-low">18°C</span>
+                            <span class="precip">0mm</span>
+                        </div>
+                        <div class="recommendation">
+                            Normal watering recommended
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-day">
+                        <div class="day-header">
+                            <span class="day-name">Mon</span>
+                            <span class="day-date">Jun 30</span>
+                        </div>
+                        <div class="weather-icon">
+                            <i class="fas fa-cloud-sun-rain"></i>
+                        </div>
+                        <div class="weather-details">
+                            <span class="temp-high">25°C</span>
+                            <span class="temp-low">16°C</span>
+                            <span class="precip">3mm</span>
+                        </div>
+                        <div class="recommendation">
+                            Reduce watering by 30%
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-day">
+                        <div class="day-header">
+                            <span class="day-name">Tue</span>
+                            <span class="day-date">Jul 1</span>
+                        </div>
+                        <div class="weather-icon">
+                            <i class="fas fa-cloud-rain"></i>
+                        </div>
+                        <div class="weather-details">
+                            <span class="temp-high">22°C</span>
+                            <span class="temp-low">14°C</span>
+                            <span class="precip">12mm</span>
+                        </div>
+                        <div class="recommendation">
+                            Skip watering today
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-day">
+                        <div class="day-header">
+                            <span class="day-name">Wed</span>
+                            <span class="day-date">Jul 2</span>
+                        </div>
+                        <div class="weather-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <div class="weather-details">
+                            <span class="temp-high">24°C</span>
+                            <span class="temp-low">15°C</span>
+                            <span class="precip">1mm</span>
+                        </div>
+                        <div class="recommendation">
+                            Light watering sufficient
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-day">
+                        <div class="day-header">
+                            <span class="day-name">Thu</span>
+                            <span class="day-date">Jul 3</span>
+                        </div>
+                        <div class="weather-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <div class="weather-details">
+                            <span class="temp-high">30°C</span>
+                            <span class="temp-low">19°C</span>
+                            <span class="precip">0mm</span>
+                        </div>
+                        <div class="recommendation">
+                            Increase watering by 20%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const previewBtn = document.getElementById('preview-btn');
+            const generateBtn = document.querySelector('button[type="submit"]');
+            const previewContainer = document.getElementById('preview-container');
+            const generatedSchedules = document.getElementById('generated-schedules');
+            const scheduleList = document.getElementById('schedule-list');
+
+            // Sample schedule data
+            const sampleSchedules = [
+                { id: 1, zone: 'Front Garden', time: 'Jul 1, 06:00', duration: '20 min' },
+                { id: 2, zone: 'Back Lawn', time: 'Jul 1, 06:25', duration: '15 min' },
+                { id: 3, zone: 'Vegetable Garden', time: 'Jul 1, 18:00', duration: '25 min' }
+            ];
+
+            function showSchedules(schedules) {
+                scheduleList.innerHTML = '';
+                schedules.forEach(schedule => {
+                    const scheduleItem = document.createElement('div');
+                    scheduleItem.className = 'schedule-item';
+                    scheduleItem.innerHTML = `
+                        <div class="schedule-info">
+                            <span class="zone-name">${schedule.zone}</span>
+                            <span class="schedule-time">${schedule.time} (${schedule.duration})</span>
+                        </div>
+                        <div class="schedule-actions">
+                            <button class="btn btn-sm btn-success confirm-schedule" data-schedule-id="${schedule.id}">
+                                <i class="fas fa-check"></i>
+                                Confirm
+                            </button>
+                            <button class="btn btn-sm btn-secondary edit-schedule" data-schedule-id="${schedule.id}">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                        </div>
+                    `;
+                    scheduleList.appendChild(scheduleItem);
+                });
+
+                // Add event listeners to new buttons
+                addScheduleEventListeners();
+            }
+
+            function addScheduleEventListeners() {
+                document.querySelectorAll('.confirm-schedule').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const scheduleId = this.dataset.scheduleId;
+                        this.innerHTML = '<i class="fas fa-check"></i> Confirmed';
+                        this.disabled = true;
+                        this.style.opacity = '0.6';
+                    });
+                });
+
+                document.querySelectorAll('.edit-schedule').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const scheduleId = this.dataset.scheduleId;
+                        alert('Edit functionality would open a modal or navigate to edit page for schedule ' + scheduleId);
+                    });
+                });
+            }
+
+            // Preview button functionality
+            previewBtn.addEventListener('click', function() {
+                previewContainer.innerHTML = `
+                    <div style="text-align: center; color: #667eea;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Generating preview...</p>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    showSchedules(sampleSchedules);
+                    previewContainer.style.display = 'none';
+                    generatedSchedules.style.display = 'block';
+                }, 1500);
+            });
+
+            // Generate schedule form submission
+            document.getElementById('auto-schedule-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                generateBtn.disabled = true;
+
+                setTimeout(() => {
+                    showSchedules(sampleSchedules);
+                    previewContainer.style.display = 'none';
+                    generatedSchedules.style.display = 'block';
+                    
+                    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Schedule';
+                    generateBtn.disabled = false;
+                }, 2000);
+            });
+
+            // Zone checkbox interactions
+            document.querySelectorAll('.zone-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('click', function() {
+                    const input = this.querySelector('input[type="checkbox"]');
+                    if (input) {
+                        input.checked = !input.checked;
+                    }
+                });
+
+                // Prevent double-toggle when clicking the input directly
+                checkbox.querySelector('input[type="checkbox"]').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        });
+
+  <div class="card">
+    <div class="card-header">
+        <div class="header-content">
+            <i class="fas fa-cloud-sun"></i>
+            <span> Weather Forecast</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="weather-forecast" id="forecast-container">
+            <!-- Forecast cards will be inserted dynamically here -->
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    fetch("/api/weather/")
+        .then(response => response.json())
+        .then(data => {
+            console.log(data); // check your API data
+            const forecastContainer = document.getElementById("forecast-container");
+
+            const today = new Date();
+            today.setHours(0,0,0,0); // normalize to midnight
+
+            // Get forecasts that are strictly after today (i.e., starting tomorrow)
+            const next5Days = data
+                .filter(d => {
+                    const forecastDate = new Date(d.date);
+                    forecastDate.setHours(0,0,0,0); // normalize
+                    return forecastDate > today;
+                })
+                .slice(0, 5);
+
+            forecastContainer.innerHTML = ''; // clear old content if any
+
+            next5Days.forEach(dayData => {
+                const dateObj = new Date(dayData.date);
+                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' }); // e.g. Mon
+                const dayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); // e.g. Jun 30
+
+                const iconUrl = `http://openweathermap.org/img/wn/${dayData.icon}@2x.png`;
+
+                const recommendation = getRecommendation(dayData);
+
+                const forecastHTML = `
+                    <div class="forecast-day">
+                        <div class="day-header">
+                            <span class="day-name">${dayName}</span>
+                            <span class="day-date">${dayDate}</span>
+                        </div>
+                        <div class="weather-icon">
+                            <img src="${iconUrl}" alt="weather icon">
+                        </div>
+                        <div class="weather-details">
+                            <span class="temp-high">${dayData.temperature_max}°C</span>
+                            <span class="temp-low">${dayData.temperature_min}°C</span>
+                            <span class="precip">${dayData.precip}mm</span>
+                        </div>
+                        <div class="recommendation">${recommendation}</div>
+                    </div>
+                `;
+                forecastContainer.insertAdjacentHTML('beforeend', forecastHTML);
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching weather data:", error);
+        });
+});
+
+function getRecommendation(data) {
+    if (data.precip > 10) return "Skip watering today";
+    if (data.precip > 3) return "Reduce watering by 30%";
+    if (data.temperature_max > 30) return "Increase watering by 20%";
+    if (data.precip <= 1) return "Light watering sufficient";
+    return "Normal watering recommended";
+}
+</script>
+
+</body>
+</html>

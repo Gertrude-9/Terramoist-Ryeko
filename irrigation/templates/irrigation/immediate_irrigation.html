@@ -1,0 +1,146 @@
+<!-- templates/irrigation/immediate_irrigation.html -->
+{% extends 'irrigation/base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Start Immediate Irrigation</h1>
+    <p class="page-subtitle">Manually start irrigation for any zone</p>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">Quick Start</div>
+        <div class="card-body">
+            <form method="post" id="immediateForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="zone_id">Select Zone</label>
+                    <select id="zone_id" name="zone_id" class="form-control" required>
+                        <option value="">Choose irrigation zone</option>
+                        {% for zone in zones %}
+                        <option value="{{ zone.id }}" 
+                                data-area="{{ zone.area_sqm }}" 
+                                data-soil="{{ zone.soil_type }}"
+                                data-plant="{{ zone.plant_type }}">
+                            {{ zone.name }} ({{ zone.area_sqm }} m²)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="duration">Duration (minutes)</label>
+                    <input type="number" id="duration" name="duration" class="form-control" 
+                           min="1" max="120" value="30" required>
+                    <small style="color: #6c757d;">Recommended: 20-45 minutes depending on zone size</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="notes">Notes (Optional)</label>
+                    <textarea id="notes" name="notes" class="form-control" rows="3" 
+                              placeholder="Any special instructions or observations..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-play"></i>
+                    Start Irrigation Now
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Zone Information</div>
+        <div class="card-body">
+            <div id="zoneInfo" style="display: none;">
+                <div style="margin-bottom: 1rem;">
+                    <strong>Area:</strong> <span id="zoneArea">-</span> m²
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>Soil Type:</strong> <span id="zoneSoil">-</span>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>Plant Type:</strong> <span id="zonePlant">-</span>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>Recommended Duration:</strong> <span id="recommendedDuration">-</span> minutes
+                </div>
+            </div>
+            
+            <div id="noZoneSelected" class="empty-state" style="padding: 2rem;">
+                <i class="fas fa-map-marker-alt"></i>
+                <p>Select a zone to see details and recommendations</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const zoneSelect = document.getElementById('zone_id');
+const durationInput = document.getElementById('duration');
+const zoneInfo = document.getElementById('zoneInfo');
+const noZoneSelected = document.getElementById('noZoneSelected');
+
+zoneSelect.addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    
+    if (selectedOption.value) {
+        const area = selectedOption.dataset.area;
+        const soil = selectedOption.dataset.soil;
+        const plant = selectedOption.dataset.plant;
+        
+        // Show zone information
+        document.getElementById('zoneArea').textContent = area;
+        document.getElementById('zoneSoil').textContent = soil;
+        document.getElementById('zonePlant').textContent = plant;
+        
+        // Calculate recommended duration based on area and soil type
+        let recommendedMinutes = Math.max(20, Math.min(60, area * 0.5));
+        if (soil === 'sand') recommendedMinutes *= 0.8;
+        if (soil === 'clay') recommendedMinutes *= 1.2;
+        
+        recommendedMinutes = Math.round(recommendedMinutes);
+        document.getElementById('recommendedDuration').textContent = recommendedMinutes;
+        durationInput.value = recommendedMinutes;
+        
+        zoneInfo.style.display = 'block';
+        noZoneSelected.style.display = 'none';
+    } else {
+        zoneInfo.style.display = 'none';
+        noZoneSelected.style.display = 'block';
+        durationInput.value = 30;
+    }
+});
+
+document.getElementById('immediateForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const zoneName = zoneSelect.options[zoneSelect.selectedIndex].text;
+    const duration = durationInput.value;
+    
+    if (confirm(`Start ${duration} minute irrigation for ${zoneName}?`)) {
+        fetch('{% url "irrigation:immediate_irrigation" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Irrigation started successfully!');
+                window.location.href = '{% url "irrigation:irrigation_dashboard" %}';
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error starting irrigation. Please try again.');
+            console.error('Error:', error);
+        });
+    }
+});
+</script>
+{% endblock %}
