@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}FarmSense | Smart Agriculture Solutions{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Bootstrap CSS (via CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Base Styles -->
+    <style>
+        :root {
+            --primary-green: #28a745;
+            --success-green: #198754;
+            --light-green: #d4edda;
+            --dark-green: #155724;
+            --accent-green: #20c997;
+            --bg-light: #f8f9fa;
+            --text-dark: #212529;
+            --text-muted: #6c757d;
+            --border-color: rgba(40, 167, 69, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Modern Navigation */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-green), var(--success-green)) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            border-bottom: 3px solid var(--accent-green);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-brand:hover {
+            color: rgba(255, 255, 255, 0.9) !important;
+            transform: translateY(-1px);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+            transform: translateY(-1px);
+        }
+
+        .navbar-nav .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white !important;
+        }
+
+        /* Breadcrumb Styling */
+        .breadcrumb-container {
+            background: white;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--success-green);
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-muted);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem 0;
+        }
+
+        /* Card Enhancements */
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Button Enhancements */
+        .btn {
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            padding: 0.6rem 1.2rem;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--primary-green), var(--success-green));
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, var(--success-green), var(--dark-green));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Modern Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--dark-green), var(--success-green));
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h5 {
+            color: white;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .footer-section a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+            
+            .main-content {
+                padding: 1rem 0;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        /* Utility Classes */
+        .text-success {
+            color: var(--primary-green) !important;
+        }
+
+        .bg-success {
+            background-color: var(--primary-green) !important;
+        }
+
+        .border-success {
+            border-color: var(--primary-green) !important;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'sensors:sensor_list' %}">
+                <i class="fas fa-seedling"></i>
+                Farm Sensors
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav" aria-controls="navbarNav"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                {% comment %} <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'sensors:sensor_list' %}">
+                            <i class="fas fa-broadcast-tower me-1"></i>
+                            Sensors
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-chart-line me-1"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-cog me-1"></i>
+                            Settings
+                        </a>
+                    </li>
+                </ul> {% endcomment %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    {% if breadcrumb_items %}
+    <div class="breadcrumb-container">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'sensors:sensor_list' %}">
+                            <i class="fas fa-home me-1"></i>
+                            Home
+                        </a>
+                    </li>
+                    {% block breadcrumb_items %}{% endblock %}
+                </ol>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="fade-in">
+            {% block content %}
+            <!-- Page-specific content goes here -->
+            {% endblock %}
+        </div>
+    </main>
+
+    {% comment %} <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h5>
+                        <i class="fas fa-seedling me-2"></i>
+                        FarmSense
+                    </h5>
+                    <p>Smart agriculture solutions for modern farming. Monitor, analyze, and optimize your farm's productivity with our advanced sensor technology.</p>
+                </div>
+                <div class="footer-section">
+                    <h5>Quick Links</h5>
+                    <a href="{% url 'sensors:sensor_list' %}">Sensor Dashboard</a>
+                    <a href="#">Data Analytics</a>
+                    <a href="#">Farm Management</a>
+                    <a href="#">Support Center</a>
+                </div>
+                <div class="footer-section">
+                    <h5>Contact Info</h5>
+                    <p>
+                        <i class="fas fa-envelope me-2"></i>
+                        support@farmsense.com
+                    </p>
+                    <p>
+                        <i class="fas fa-phone me-2"></i>
+                        +1 (555) 123-4567
+                    </p>
+                    <p>
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        123 Farm Tech Lane, AgriCity
+                    </p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© {{ year|default:2025 }} FarmSense. All rights reserved. | Empowering Agriculture Through Technology</p>
+            </div>
+        </div>
+    </footer> {% endcomment %}
+
+    <!-- Bootstrap JS (via CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

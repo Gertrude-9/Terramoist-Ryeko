@@ -1,8 +1,9 @@
 # models.py
 from django.db import models
 from django.contrib.auth import get_user_model
-
 from django.conf import settings
+from sensors.models import Sensor
+
 
 User = get_user_model()
 
@@ -34,20 +35,38 @@ class Sensor(models.Model):
     def __str__(self):
         return f"{self.get_sensor_type_display()} - {self.sensor_id}"
 
-class SensorData(models.Model):
+class SensorReading(models.Model):
     sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE, related_name='readings')
+    value = models.DecimalField(max_digits=10, decimal_places=2)
     timestamp = models.DateTimeField(auto_now_add=True)
-    value = models.FloatField()
     
-    # For weather API data
-    is_api_data = models.BooleanField(default=False)
-    source = models.CharField(max_length=50, blank=True, null=True)
-
     class Meta:
         ordering = ['-timestamp']
-        indexes = [
-            models.Index(fields=['sensor', 'timestamp']),
-        ]
-
+    
     def __str__(self):
         return f"{self.sensor} - {self.value} at {self.timestamp}"
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Automatically check thresholds after saving a reading
+        self.check_threshold_alerts()
+    
+    def check_threshold_alerts(self):
+        # Import Alert here to avoid circular import issues
+        from fields.models import Alert
+
+        sensor = self.sensor
+        if sensor.min_threshold is not None and self.value < sensor.min_threshold:
+            Alert.objects.create(
+                sensor=sensor,
+                alert_type='low',
+                message=f"{sensor.sensor_type.name} is below minimum threshold: {self.value} < {sensor.min_threshold}",
+                reading_value=self.value
+            )
+        elif sensor.max_threshold is not None and self.value > sensor.max_threshold:
+            Alert.objects.create(
+                sensor=sensor,
+                alert_type='high',
+                message=f"{sensor.sensor_type.name} is above maximum threshold: {self.value} > {sensor.max_threshold}",
+                reading_value=self.value
+            )

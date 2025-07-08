@@ -7,6 +7,8 @@ from rest_framework.response import Response  # ✅ Correct import
 import requests
 from django.conf import settings
 from datetime import timedelta
+
+from sensors.models import Sensor
 from .models import Farm
 # from .models import Sensor, SensorData  # Uncomment when ready
 
@@ -15,22 +17,22 @@ class SensorDashboardView(View):
 
     def get(self, request):
         farms = Farm.objects.filter(owner=request.user)
-        # sensors = Sensor.objects.filter(farm__in=farms, is_active=True).prefetch_related('sensordata_set')  # commented out
+        sensors = Sensor.objects.filter(farm__in=farms, is_active=True).prefetch_related('sensordata_set')  # commented out
 
-        # for sensor in sensors:
-        #     sensor.latest_data = sensor.sensordata_set.order_by('-timestamp').first()
-        #     if sensor.sensor_type in ['TEMP', 'SOIL_TEMP']:
-        #         sensor.unit = '°C'
-        #     elif sensor.sensor_type == 'HUMID':
-        #         sensor.unit = '%'
-        #     elif sensor.sensor_type == 'RAIN':
-        #         sensor.unit = 'mm'
-        #     else:
-        #         sensor.unit = ''
+        for sensor in sensors:
+            sensor.latest_data = sensor.sensordata_set.order_by('-timestamp').first()
+            if sensor.sensor_type in ['TEMP', 'SOIL_TEMP']:
+                sensor.unit = '°C'
+            elif sensor.sensor_type == 'HUMID':
+                sensor.unit = '%'
+            elif sensor.sensor_type == 'RAIN':
+                sensor.unit = 'mm'
+            else:
+                sensor.unit = ''
 
         context = {
             'farms': farms,
-            # 'sensors': sensors
+            'sensors': sensors
         }
         return render(request, self.template_name, context)
 

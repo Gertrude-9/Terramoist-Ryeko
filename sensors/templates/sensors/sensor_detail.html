@@ -1,0 +1,102 @@
+{% extends 'sensors/base.html' %}
+
+{% block content %}
+<div class="container sensor-detail-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-content">
+                <h2>
+                    <i class="fas fa-sensor"></i> {{ sensor.name }}
+                    <span class="badge bg-{% if sensor.is_active %}success{% else %}secondary{% endif %}">
+                        {% if sensor.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </h2>
+                <div class="actions">
+                    <a href="{% url 'sensors:sensor_update' sensor.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-section">
+                        <h4>Sensor Information</h4>
+                        <table class="table">
+                            <tr>
+                                <th>Type:</th>
+                                <td>{{ sensor.get_sensor_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Field:</th>
+                                <td>
+                                    <a href="{% url 'fields:field_detail' sensor.field.pk %}">
+                                        {{ sensor.field.name }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Farm:</th>
+                                <td>
+                                    <a href="{% url 'farms:farm_detail' sensor.field.farm.pk %}">
+                                        {{ sensor.field.farm.name }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Installation Date:</th>
+                                <td>{{ sensor.installation_date|date:"M d, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Reading:</th>
+                                <td>
+                                    {% if sensor.last_reading %}
+                                        {{ sensor.last_reading.timestamp|timesince }} ago
+                                    {% else %}
+                                        No readings yet
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="readings-section">
+                        <h4>Recent Readings</h4>
+                        {% if readings %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Value</th>
+                                        <th>Unit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reading in readings %}
+                                    <tr>
+                                        <td>{{ reading.timestamp|date:"M d, Y H:i" }}</td>
+                                        <td>{{ reading.value }}</td>
+                                        <td>{{ reading.unit }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <a href="#" class="btn btn-sm btn-outline-primary">View All Readings</a>
+                        {% else %}
+                        <div class="alert alert-info">
+                            No readings available for this sensor yet.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

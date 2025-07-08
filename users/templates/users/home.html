@@ -6,88 +6,679 @@
     <title>TerraMoist - Smart Agriculture Solutions</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2c786c;
-            --secondary: #004445;
-            --accent: #f8b400;
-            --light: #faf5e4;
+            --primary: #16a085;
+            --primary-dark: #138d75;
+            --secondary: #2c3e50;
+            --accent: #f39c12;
+            --light: #f8f9fa;
+            --success: #27ae60;
+            --gradient-primary: linear-gradient(135deg, #16a085 0%, #2ecc71 100%);
+            --gradient-secondary: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 12px 48px rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 20px 64px rgba(0, 0, 0, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #2c3e50;
+            line-height: 1.6;
+            scroll-behavior: smooth;
         }
         
         .hero {
-            background: linear-gradient(rgba(44, 120, 108, 0.8), rgba(44, 120, 108, 0.8)), 
-            url('https://www.synox.io/wp-content/uploads/2022/04/smart-farming-agriculture-du-futur-iot.jpg') 
+            background: url('https://www.synox.io/wp-content/uploads/2022/04/smart-farming-agriculture-du-futur-iot.jpg') 
             no-repeat center center;
             background-size: cover;
+            background-attachment: fixed;
             color: white;
-            padding: 120px 0;
+            padding: 160px 0 120px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease-out;
         }
         
         .hero h1 {
             font-weight: 700;
-            font-size: 3rem;
-            margin-bottom: 20px;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 24px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            letter-spacing: -0.02em;
         }
         
         .hero p {
-            font-size: 1.2rem;
-            max-width: 700px;
-            margin: 0 auto 30px;
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            font-weight: 400;
+            margin: 0 auto 40px;
+            opacity: 0.98;
+            max-width: 600px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
         }
         
         .btn-cta {
-            background-color: var(--accent);
-            color: #333;
+            background: var(--gradient-primary);
+            color: white;
             font-weight: 600;
-            padding: 12px 30px;
-            border-radius: 30px;
-            transition: all 0.3s;
+            padding: 16px 36px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: var(--shadow-soft);
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-cta:hover::before {
+            left: 100%;
         }
         
         .btn-cta:hover {
-            background-color: #e6a700;
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+            color: white;
         }
         
         .feature-icon {
-            font-size: 2.5rem;
+            font-size: 3rem;
             color: var(--primary);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
         }
         
         .feature-card {
-            padding: 30px;
-            border-radius: 10px;
-            transition: all 0.3s;
+            padding: 0;
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             height: 100%;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(22, 160, 133, 0.1);
+            background: white;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .feature-image {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .feature-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        
+        .feature-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(22, 160, 133, 0.1) 100%);
+        }
+        
+        .feature-content {
+            padding: 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .feature-card:hover::before {
+            opacity: 0.05;
         }
         
         .feature-card:hover {
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transform: translateY(-5px);
+            box-shadow: var(--shadow-strong);
+            transform: translateY(-12px);
+            border-color: var(--primary);
+        }
+        
+        .feature-card:hover .feature-image img {
+            transform: scale(1.05);
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1);
+            color: var(--primary-dark);
+        }
+        
+        .feature-card h4 {
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--secondary);
+            font-size: 1.4rem;
+        }
+        
+        .feature-card p {
+            color: #6c757d;
+            line-height: 1.7;
+            margin: 0;
         }
         
         .navbar {
-            padding: 15px 0;
-            transition: all 0.3s;
+            padding: 20px 0;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(22, 160, 133, 0.1);
         }
         
         .navbar.scrolled {
-            background-color: white !important;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            padding: 10px 0;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: var(--shadow-soft);
+            padding: 12px 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary) !important;
+        }
+        
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            color: var(--secondary) !important;
+            margin: 0 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .navbar-nav .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: var(--primary) !important;
         }
         
         .logo {
+            height: 45px;
+            margin-right: 12px;
+            border-radius: 8px;
+        }
+        
+        .section-title {
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: var(--secondary);
+            margin-bottom: 16px;
+            position: relative;
+            text-align: center;
+        }
+        
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .bg-light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        }
+        
+        .img-fluid {
+            border-radius: 20px;
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .list-unstyled li {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .text-primary {
+            color: var(--primary) !important;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-soft);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .cta-section {
+            background: var(--gradient-primary);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="1" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .cta-section .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .btn-light {
+            background: white;
+            color: var(--primary);
+            border: none;
+            font-weight: 600;
+            padding: 16px 32px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-light:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+            color: var(--primary);
+        }
+        
+        footer {
+            background: var(--gradient-secondary);
+        }
+        
+        .social-icons a {
+            display: inline-block;
+            width: 40px;
             height: 40px;
-            margin-right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+        }
+        
+        .social-icons a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 0 8px 8px 0;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-accent:hover {
+            background: #e67e22;
+            color: white;
+        }
+        
+        .form-control {
+            border-radius: 8px 0 0 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: none;
+        }
+        
+        /* Statistics Section */
+        .stat-card {
+            padding: 30px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        
+        /* Testimonials */
+        .testimonial-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-soft);
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .testimonial-content {
+            margin-bottom: 20px;
+        }
+        
+        .testimonial-content p {
+            font-style: italic;
+            color: #6c757d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .author-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+        
+        .author-info h5 {
+            margin: 0;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .author-info small {
+            color: #6c757d;
+        }
+        
+        /* Pricing */
+        .pricing-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow-soft);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .pricing-card.featured {
+            border: 2px solid var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .pricing-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .pricing-header h3 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        
+        .price span {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+        
+        .pricing-features li {
+            padding: 10px 0;
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        
+        .btn-block {
+            width: 100%;
+            padding: 12px;
+            font-weight: 600;
+        }
+        
+        /* FAQ */
+        .accordion-item {
+            border: none;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+        
+        .accordion-button {
+            background: white;
+            border: none;
+            font-weight: 600;
+            color: var(--secondary);
+            padding: 20px;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: none;
+        }
+        
+        .accordion-body {
+            padding: 20px;
+            color: #6c757d;
+            line-height: 1.6;
+        }
+        
+        /* Contact */
+        .contact-info {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-soft);
+            height: 100%;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            font-size: 1.1rem;
+            color: #6c757d;
+        }
+        
+        .contact-form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-soft);
+        }
+        
+        .contact-form .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            color: var(--secondary);
+        }
+        
+        .contact-form .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(22, 160, 133, 0.25);
+        }
+        
+        .contact-form .btn-primary {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+        }
+        @media (max-width: 768px) {
+            .hero {
+                padding: 120px 0 80px;
+            }
+            
+            .feature-card {
+                margin-bottom: 30px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Loading animation */
+        .loading {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -104,7 +695,6 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                
                     <li class="nav-item">
                         <a class="nav-link" href="#about">About</a>
                     </li>
@@ -112,7 +702,7 @@
                         <a class="nav-link" href="#contact">Contact</a>
                     </li>
                     <li class="nav-item ms-lg-3">
-                    <a class="btn btn-outline-primary" href="{% url 'login' %}">Login</a>
+                        <a class="btn btn-outline-primary" href="{% url 'users:login' %}">Login</a>
                     </li>
                 </ul>
             </div>
@@ -122,9 +712,11 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Smart Agriculture for a Sustainable Future</h1>
-            <p>TerraMoist's advanced soil monitoring system helps farmers optimize irrigation, reduce water waste, and increase crop yields through real-time data analytics.</p>
-            <a href="#contact" class="btn btn-cta">Get Started Today</a>
+            <div class="hero-content">
+                <h1>Smart Agriculture for a Sustainable Future</h1>
+                <p>TerraMoist's advanced soil monitoring system helps farmers optimize irrigation, reduce water waste, and increase crop yields through real-time data analytics.</p>
+                <a href="#contact" class="btn btn-cta">Get Started Today</a>
+            </div>
         </div>
     </section>
 
@@ -132,51 +724,92 @@
     <section id="features" class="py-5">
         <div class="container py-5">
             <div class="text-center mb-5">
-                <h2 class="fw-bold">How TerraMoist Works</h2>
-                <p class="text-muted">Our comprehensive solution provides everything you need for precision agriculture</p>
+                <h2 class="section-title">How TerraMoist Works</h2>
+                <p class="section-subtitle">Our comprehensive solution provides everything you need for precision agriculture</p>
             </div>
             
             <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="feature-card text-center" style="background-image: url('https://www.precisa.com/wp-content/uploads/2022/06/soil.png');">
-                        <div class="feature-icon">
-                            <i class="fas fa-tint"></i>
+                    <div class="feature-card text-center">
+                        <div class="feature-image">
+                            <img src="https://www.precisa.com/wp-content/uploads/2022/06/soil.png" alt="Soil Moisture Monitoring" class="img-fluid">
                         </div>
-                        <h4>Soil Moisture Monitoring</h4>
-                        <p>Real-time tracking of soil moisture levels at multiple depths for optimal irrigation management.</p>
+                        <div class="feature-content">
+                            <div class="feature-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <h4>Soil Moisture Monitoring</h4>
+                            <p>Real-time tracking of soil moisture levels at multiple depths for optimal irrigation management.</p>
+                        </div>
                     </div>
                 </div>
                 
-                    <div class="col-md-4">
-                    <div class="feature-card text-center" style="position: relative; background-image: url('https://th.bing.com/th/id/OIP.q_QPo64syEpf_jcupA2DYAHaCe?r=0&o=7&rm=3&rs=1&pid=ImgDetMain'); background-size: cover; background-position: center; height: 300px; color: white;">
-                        
-                        <!-- Overlay -->
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1;"></div>
-                        
-                        <!-- Content -->
-                        <div style="position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px;">
-                            <div class="feature-icon" style="font-size: 2rem; margin-bottom: 10px;">
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <div class="feature-image">
+                            <img src="https://th.bing.com/th/id/OIP.q_QPo64syEpf_jcupA2DYAHaCe?r=0&o=7&rm=3&rs=1&pid=ImgDetMain" alt="Data Analytics" class="img-fluid">
+                        </div>
+                        <div class="feature-content">
+                            <div class="feature-icon">
                                 <i class="fas fa-chart-line"></i>
                             </div>
-                            <h4 style="color: white;">Data Analytics</h4>
-                            <p style="color: white;">Advanced algorithms analyze soil data to provide actionable insights and recommendations.</p>
+                            <h4>Data Analytics</h4>
+                            <p>Advanced algorithms analyze soil data to provide actionable insights and recommendations.</p>
                         </div>
                     </div>
                 </div>
 
-                
-             <div class="col-md-4">
-                <div class="feature-card text-center" style="background-image:url('https://thumbs.dreamstime.com/b/woman-farmer-using-technology-mobile-corn-field-woman-farmer-using-technology-mobile-138804713.jpg'); background-size: cover; background-position: center; position: relative; height: 300px;">
-                    <div style="background: rgba(0,0,0,0.5); height: 100%; width: 100%; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
-                        <div class="feature-icon" style="font-size: 2rem; margin-bottom: 10px;">
-                            <i class="fas fa-mobile-alt"></i>
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <div class="feature-image">
+                            <img src="https://thumbs.dreamstime.com/b/woman-farmer-using-technology-mobile-corn-field-woman-farmer-using-technology-mobile-138804713.jpg" alt="Mobile Alerts" class="img-fluid">
                         </div>
-                        <h4>Mobile Alerts</h4>
-                        <p>Receive instant notifications on your phone when irrigation is needed or when issues arise.</p>
+                        <div class="feature-content">
+                            <div class="feature-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <h4>Mobile Alerts</h4>
+                            <p>Receive instant notifications on your phone when irrigation is needed or when issues arise.</p>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
+    <!-- Statistics Section -->
+    <section class="py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Trusted by Farmers Worldwide</h2>
+                <p class="section-subtitle">Our impact speaks for itself</p>
+            </div>
+            <div class="row text-center">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Active Farmers</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number">30%</div>
+                        <div class="stat-label">Water Saved</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number">25%</div>
+                        <div class="stat-label">Yield Increase</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Monitoring</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -202,16 +835,246 @@
         </div>
     </section>
 
+    <!-- Testimonials Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">What Our Farmers Say</h2>
+                <p class="section-subtitle">Real stories from real farmers</p>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"TerraMoist helped me save 40% on water bills while increasing my crop yield by 30%. The technology is incredible!"</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="John Mukasa" class="author-img">
+                            <div class="author-info">
+                                <h5>John Mukasa</h5>
+                                <small>Maize Farmer, Wakiso</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"The mobile alerts are a game-changer. I can monitor my farm from anywhere and respond immediately to any issues."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Sarah Namukasa" class="author-img">
+                            <div class="author-info">
+                                <h5>Sarah Namukasa</h5>
+                                <small>Vegetable Farmer, Mukono</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"Installation was so easy, and the data insights help me make better decisions every day. Highly recommended!"</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/men/58.jpg" alt="David Ssali" class="author-img">
+                            <div class="author-info">
+                                <h5>David Ssali</h5>
+                                <small>Coffee Farmer, Mubende</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Choose Your Plan</h2>
+                <p class="section-subtitle">Flexible pricing for farms of all sizes</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Starter</h3>
+                            <div class="price">$99<span>/month</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check text-primary me-2"></i>Up to 5 sensors</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Basic analytics</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Mobile alerts</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Email support</li>
+                        </ul>
+                        <a href="#" class="btn btn-outline-primary btn-block">Get Started</a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card featured">
+                        <div class="pricing-badge">Most Popular</div>
+                        <div class="pricing-header">
+                            <h3>Professional</h3>
+                            <div class="price">$199<span>/month</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check text-primary me-2"></i>Up to 15 sensors</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Advanced analytics</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Real-time alerts</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Phone support</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Custom reports</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary btn-block">Get Started</a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Enterprise</h3>
+                            <div class="price">Custom</div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check text-primary me-2"></i>Unlimited sensors</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>AI-powered insights</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Multi-farm management</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>24/7 support</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>On-site training</li>
+                        </ul>
+                        <a href="#" class="btn btn-outline-primary btn-block">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-subtitle">Everything you need to know about TerraMoist</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                    How long does installation take?
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Installation typically takes 2-3 hours for a small farm. Our team provides full installation and setup, ensuring everything is working perfectly before we leave.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                    What crops work best with TerraMoist?
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    TerraMoist works with all types of crops including vegetables, fruits, grains, and cash crops like coffee and tea. Our sensors adapt to different soil types and growing conditions.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                    Is there a mobile app?
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! Our mobile app is available for both iOS and Android devices. You can monitor your farm, receive alerts, and view analytics from anywhere.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4">
+                                    What if I need technical support?
+                                </button>
+                            </h2>
+                            <div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We offer comprehensive support including phone, email, and on-site assistance. Our technical team is available during business hours, with emergency support for critical issues.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Get in Touch</h2>
+                <p class="section-subtitle">Ready to transform your farming? Let's talk!</p>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="contact-info">
+                        <h4 class="mb-4">Contact Information</h4>
+                        <div class="contact-item mb-3">
+                            <i class="fas fa-map-marker-alt text-primary me-3"></i>
+                            <span>National ICT Innovation Hub<br>Plot 9-21, Port Bell Road, Nakawa</span>
+                        </div>
+                        <div class="contact-item mb-3">
+                            <i class="fas fa-phone text-primary me-3"></i>
+                            <span>+256 701376017 / +250 722 359 866</span>
+                        </div>
+                        <div class="contact-item mb-3">
+                            <i class="fas fa-envelope text-primary me-3"></i>
+                            <span>info@ryeko.org</span>
+                        </div>
+                        <div class="contact-item mb-3">
+                            <i class="fas fa-clock text-primary me-3"></i>
+                            <span>Mon - Fri: 8:00 AM - 6:00 PM</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <form class="contact-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <input type="text" class="form-control" placeholder="Your Name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <input type="email" class="form-control" placeholder="Your Email" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="Subject" required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" rows="5" placeholder="Your Message" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- CTA Section -->
-   <section class="py-5" style="background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); color: white;">
-    <div class="container text-center py-4">
-        <h2 class="fw-bold mb-4">Ready to Transform Your Farming?</h2>
-        <p class="mb-4">Join hundreds of farmers who are already benefiting from TerraMoist's smart agriculture solutions.</p>
-        <a href="#contact" class="btn btn-light btn-lg" style="background-color: white; color: #2E7D32; border: none; font-weight: 600;">
-            Request a Demo
-        </a>
-    </div>
-</section>
+    <section class="py-5 cta-section">
+        <div class="container text-center py-4">
+            <h2 class="fw-bold mb-4">Ready to Transform Your Farming?</h2>
+            <p class="mb-4">Join hundreds of farmers who are already benefiting from TerraMoist's smart agriculture solutions.</p>
+            <a href="#contact" class="btn btn-light btn-lg">
+                Request a Demo
+            </a>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer class="py-5 bg-dark text-white">
@@ -270,6 +1133,25 @@
             } else {
                 navbar.classList.remove('scrolled');
             }
+        });
+
+        // Add loading animation
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('loading');
+        });
+
+        // Smooth scrolling for CTA buttons
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         });
     </script>
 </body>

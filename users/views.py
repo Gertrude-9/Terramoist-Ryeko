@@ -3,6 +3,8 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegisterForm
+from django.core import serializers
+from farms.models import Farm  # make sure you have imported your Farm model
 
 def home(request):
     """Home page view"""
@@ -16,7 +18,7 @@ def register(request):
             user = form.save()
             login(request, user)
             messages.success(request, 'Registration successful!')
-            return redirect('dashboard')
+            return redirect('users:dashboard')
     else:
         form = UserRegisterForm()
     return render(request, 'users/register.html', {'form': form})
@@ -31,7 +33,7 @@ def user_login(request):
         if user is not None:
             login(request, user)
             messages.success(request, 'Login successful!')
-            return redirect('dashboard')
+            return redirect('users:dashboard')
         else:
             messages.error(request, 'Invalid username or password.')
     
@@ -39,18 +41,23 @@ def user_login(request):
 
 @login_required
 def dashboard(request):
-    """Dashboard view for all logged-in users"""
-    return render(request, 'users/dashboard.html', {'user': request.user})
+    """Dashboard view showing farms and fields"""
+    farms = Farm.objects.prefetch_related('fields').all()
 
-@login_required
-def dashboard(request):
-    # Sample data - replace with actual data from your models
+    # Build a list of farms with nested fields
+    farms_data = []
+    for farm in farms:
+        farm_data = {
+            'id': farm.id,
+            'name': farm.name,
+            'fields': [{'id': field.id, 'name': field.name} for field in farm.fields.all()]
+        }
+        farms_data.append(farm_data)
+
     context = {
         'user': request.user,
-        'soil_moisture': 65,
-        'temperature': 24,
-        'active_fields': '5/8',
-        'alerts_count': 3,
+        'farms': farms,  # keep original queryset if needed for other parts
+        'farms_data': farms_data,  # JSON-ready list of farms + fields
         'alerts': [
             {'type': 'danger', 'message': 'CRITICAL: Low moisture in Field A (35%)'},
             {'type': 'warning', 'message': 'WARNING: Sensor offline in Field D'},
@@ -72,9 +79,8 @@ def dashboard(request):
             'field_b': [55, 50, 62, 60, 58, 52, 57],
         }
     }
-
-    
     return render(request, 'users/dashboard.html', context)
+
 
 @login_required
 def fields_view(request):
@@ -91,4 +97,3 @@ def ai_insights_view(request):
 @login_required
 def alerts_view(request):
     return render(request, 'users/alerts.html')
-

@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -38,7 +39,6 @@ def dashboard(request):
     }
     return render(request, 'fields/dashboard.html', context)
 
-
 @login_required
 def field_detail(request, field_id):
     field = get_object_or_404(Field, id=field_id, farm__owner=request.user)
@@ -48,7 +48,7 @@ def field_detail(request, field_id):
     for sensor in sensors:
         latest_reading = sensor.readings.first()
         recent_readings = sensor.readings.filter(
-        timestamp__gte=timezone.now() - timedelta(hours=24)
+            timestamp__gte=timezone.now() - timedelta(hours=24)
         )[:20]
         
         sensor_data.append({
@@ -57,19 +57,16 @@ def field_detail(request, field_id):
             'recent_readings': list(recent_readings.values('value', 'timestamp')),
             'active_alerts': sensor.alerts.filter(is_resolved=False).count()
         })
-    
-        active_alerts = Alert.objects.filter(
-            sensor__field__farm__owner=request.user, 
-            sensor__is_active=True
-        ).count()
-    
+
+    # ✅ Move this outside the loop:
+    active_alerts = Alert.objects.filter(sensor__field=field, is_resolved=False)
+
     context = {
         'field': field,
         'sensor_data': sensor_data,
         'active_alerts': active_alerts,
     }
     return render(request, 'fields/field_detail.html', context)
-
 
 @login_required
 def sensor_readings_api(request, sensor_id):
@@ -175,7 +172,7 @@ def field_create(request):
                     
                     field.save()
                     messages.success(request, f'Field "{field.name}" has been created successfully!')
-                    return redirect('field_detail', field_id=field.id)
+                    return redirect(reverse('farms:farm_detail', kwargs={'farm_id': field.farm.id}))
                     
             except ValidationError as e:
                 messages.error(request, f'Error creating field: {e.message}')
@@ -293,98 +290,6 @@ def field_list(request):
     }
     return render(request, 'fields/field_list.html', context)
 
-
-logger = logging.getLogger(__name__)
-
-@login_required
-def sensor_create(request):
-    """
-    Create a new sensor
-    """
-    if request.method == 'POST':
-        form = SensorForm(request.POST, user=request.user)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    sensor = form.save(commit=False)
-                    
-                    # Set installation date to today if not provided
-                    if not sensor.installation_date:
-                        sensor.installation_date = timezone.now().date()
-                    
-                    sensor.save()
-                    
-                messages.success(request, f'Sensor "{sensor.name}" has been created successfully!')
-                return redirect('field_detail', field_id=sensor.field.id)
-                
-            except ValidationError as e:
-                messages.error(request, f'Validation error: {str(e)}')
-            except Exception as e:
-                logger.error(f'Error creating sensor: {str(e)}', exc_info=True)
-                messages.error(request, 'An error occurred while creating the sensor. Please try again.')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = SensorForm(user=request.user)
-        
-        # Pre-populate field if provided in URL parameters
-        field_id = request.GET.get('field_id')
-        
-        if field_id:
-            try:
-                field = Field.objects.get(id=field_id, farm__owner=request.user)
-                form.fields['field'].initial = field
-            except Field.DoesNotExist:
-                pass
-    
-    context = {
-        'form': form,
-        'title': 'Create New Sensor',
-    }
-    
-    return render(request, 'fields/sensor_create.html', context)
-
-@login_required
-def sensor_update(request, pk):
-    """
-    Update an existing sensor
-    """
-    sensor = get_object_or_404(Sensor, pk=pk, field__farm__owner=request.user)
-    
-    if request.method == 'POST':
-        form = SensorForm(request.POST, instance=sensor)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    updated_sensor = form.save(commit=False)
-                    updated_sensor.updated_at = timezone.now()
-                    updated_sensor.save()
-                    
-                messages.success(request, f'Sensor "{updated_sensor.name}" has been updated successfully!')
-                return redirect('field_detail', pk=updated_sensor.field.id)
-                
-            except ValidationError as e:
-                messages.error(request, f'Validation error: {e.message}')
-            except Exception as e:
-                logger.error(f'Error updating sensor {pk}: {str(e)}')
-                messages.error(request, 'An error occurred while updating the sensor. Please try again.')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = SensorForm(instance=sensor)
-    
-    # Filter farms to only show user's farms
-    form.fields['farm'].queryset = Farm.objects.filter(owner=request.user)
-    
-    context = {
-        'form': form,
-        'sensor': sensor,
-        'title': f'Update Sensor: {sensor.name}',
-    }
-    
-    return render(request, 'sensors/sensor_create.html', context)
-
-
 @login_required
 @require_http_methods(["GET"])
 def get_farm_fields(request, farm_id):
@@ -407,261 +312,4 @@ def get_farm_fields(request, farm_id):
         }, status=500)
 
 
-@login_required
-@require_http_methods(["GET"])
-def get_sensor_type_details(request, sensor_type_id):
-    """
-    API endpoint to get sensor type details
-    """
-    try:
-        sensor_type = get_object_or_404(SensorType, id=sensor_type_id)
-        
-        return JsonResponse({
-            'success': True,
-            'id': sensor_type.id,
-            'name': sensor_type.name,
-            'unit': sensor_type.unit,
-            'min_value': sensor_type.min_value,
-            'max_value': sensor_type.max_value,
-            'description': sensor_type.description,
-            'measurement_type': sensor_type.measurement_type,
-        })
-    except Exception as e:
-        logger.error(f'Error fetching sensor type {sensor_type_id}: {str(e)}')
-        return JsonResponse({
-            'success': False,
-            'error': 'Failed to fetch sensor type details'
-        }, status=500)
 
-
-@login_required
-@require_http_methods(["POST"])
-def test_sensor(request, sensor_id):
-    """
-    API endpoint to test a sensor connection and get latest reading
-    """
-    try:
-        sensor = get_object_or_404(Sensor, id=sensor_id, field__farm__owner=request.user)
-        
-        if not sensor.is_active:
-            return JsonResponse({
-                'success': False,
-                'message': 'Sensor is not active'
-            })
-        
-        if sensor.status != 'active':
-            return JsonResponse({
-                'success': False,
-                'message': f'Sensor status is {sensor.status}'
-            })
-        
-        # Get the latest reading from the sensor
-        latest_reading = sensor.readings.order_by('-timestamp').first()
-        
-        if latest_reading:
-            # Calculate time since last reading
-            time_diff = timezone.now() - latest_reading.timestamp
-            hours_since = time_diff.total_seconds() / 3600
-            
-            if hours_since > 24:  # No reading in last 24 hours
-                return JsonResponse({
-                    'success': False,
-                    'message': f'No recent readings. Last reading was {hours_since:.1f} hours ago.'
-                })
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Sensor test successful',
-                'reading': latest_reading.value,
-                'unit': sensor.sensor_type.unit,
-                'timestamp': latest_reading.timestamp.isoformat(),
-                'hours_since_reading': round(hours_since, 1)
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'message': 'No readings found for this sensor'
-            })
-            
-    except Exception as e:
-        logger.error(f'Error testing sensor {sensor_id}: {str(e)}')
-        return JsonResponse({
-            'success': False,
-            'message': 'Error occurred while testing sensor'
-        }, status=500)
-
-
-@login_required
-def sensor_detail(request, pk):
-    """
-    Display detailed view of a sensor
-    """
-    sensor = get_object_or_404(Sensor, pk=pk, field__farm__owner=request.user)
-    
-    # Get recent readings (last 100)
-    recent_readings = sensor.readings.order_by('-timestamp')[:100]
-    
-    # Calculate sensor statistics
-    if recent_readings:
-        readings_values = [r.value for r in recent_readings]
-        stats = {
-            'latest_reading': recent_readings[0],
-            'avg_value': sum(readings_values) / len(readings_values),
-            'min_value': min(readings_values),
-            'max_value': max(readings_values),
-            'total_readings': sensor.readings.count(),
-        }
-    else:
-        stats = {
-            'latest_reading': None,
-            'avg_value': None,
-            'min_value': None,
-            'max_value': None,
-            'total_readings': 0,
-        }
-    
-    context = {
-        'sensor': sensor,
-        'recent_readings': recent_readings,
-        'stats': stats,
-    }
-    
-    return render(request, 'fileds/sensor_detail.html', context)
-
-
-@login_required
-def sensor_delete(request, pk):
-    """
-    Delete a sensor
-    """
-    sensor = get_object_or_404(Sensor, pk=pk, field__farm__owner=request.user)
-    field_id = sensor.field.id
-    
-    if request.method == 'POST':
-        try:
-            sensor_name = sensor.name
-            sensor.delete()
-            messages.success(request, f'Sensor "{sensor_name}" has been deleted successfully!')
-            return redirect('field_detail', pk=field_id)
-        except Exception as e:
-            logger.error(f'Error deleting sensor {pk}: {str(e)}')
-            messages.error(request, 'An error occurred while deleting the sensor.')
-            return redirect('sensor_detail', pk=pk)
-    
-    context = {
-        'sensor': sensor,
-    }
-    
-    return render(request, 'fields/sensor_confirm_delete.html', context)
-
-
-@login_required
-def sensor_list(request):
-    """
-    List all sensors for the current user
-    """
-    sensors = Sensor.objects.filter(
-        field__farm__owner=request.user
-    ).select_related(
-        'field', 'field__farm', 'sensor_type'
-    ).order_by('-created_at')
-    
-    # Filter by status if provided
-    status_filter = request.GET.get('status')
-    if status_filter and status_filter in ['active', 'inactive', 'maintenance']:
-        sensors = sensors.filter(status=status_filter)
-    
-    # Filter by sensor type if provided
-    sensor_type_filter = request.GET.get('sensor_type')
-    if sensor_type_filter:
-        sensors = sensors.filter(sensor_type_id=sensor_type_filter)
-    
-    # Filter by farm if provided
-    farm_filter = request.GET.get('farm')
-    if farm_filter:
-        sensors = sensors.filter(field__farm_id=farm_filter)
-    
-    # Get available sensor types and farms for filters
-    available_sensor_types = SensorType.objects.all()
-    available_farms = Farm.objects.filter(owner=request.user)
-    
-    context = {
-        'sensors': sensors,
-        'available_sensor_types': available_sensor_types,
-        'available_farms': available_farms,
-        'current_status_filter': status_filter,
-        'current_sensor_type_filter': sensor_type_filter,
-        'current_farm_filter': farm_filter,
-    }
-    
-    return render(request, 'fields/sensor_list.html', context)
-
-
-@login_required
-@require_http_methods(["POST"])
-def sensor_calibrate(request, pk):
-    """
-    Calibrate a sensor with new offset and slope values
-    """
-    sensor = get_object_or_404(Sensor, pk=pk, field__farm__owner=request.user)
-    
-    try:
-        data = json.loads(request.body)
-        offset = float(data.get('offset', 0))
-        slope = float(data.get('slope', 1))
-        
-        # Update calibration values
-        sensor.calibration_offset = offset
-        sensor.calibration_slope = slope
-        sensor.last_calibration = timezone.now()
-        sensor.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Sensor calibrated successfully',
-            'offset': offset,
-            'slope': slope,
-            'last_calibration': sensor.last_calibration.isoformat()
-        })
-        
-    except (json.JSONDecodeError, ValueError) as e:
-        return JsonResponse({
-            'success': False,
-            'message': 'Invalid calibration data provided'
-        }, status=400)
-    except Exception as e:
-        logger.error(f'Error calibrating sensor {pk}: {str(e)}')
-        return JsonResponse({
-            'success': False,
-            'message': 'Error occurred while calibrating sensor'
-        }, status=500)
-
-
-@login_required
-@require_http_methods(["POST"])
-def sensor_toggle_status(request, pk):
-    """
-    Toggle sensor active/inactive status
-    """
-    sensor = get_object_or_404(Sensor, pk=pk, field__farm__owner=request.user)
-    
-    try:
-        sensor.is_active = not sensor.is_active
-        sensor.save()
-        
-        status_text = "activated" if sensor.is_active else "deactivated"
-        messages.success(request, f'Sensor "{sensor.name}" has been {status_text}.')
-        
-        return JsonResponse({
-            'success': True,
-            'is_active': sensor.is_active,
-            'message': f'Sensor {status_text} successfully'
-        })
-        
-    except Exception as e:
-        logger.error(f'Error toggling sensor status {pk}: {str(e)}')
-        return JsonResponse({
-            'success': False,
-            'message': 'Error occurred while updating sensor status'
-        }, status=500)
-    

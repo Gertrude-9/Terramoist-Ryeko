@@ -1,7 +1,11 @@
 # fields/admin.py
 
 from django.contrib import admin
-from .models import Farm, Field, SensorType, Sensor, SensorReading, Alert
+from .models import Alert
+from .models import Farm, Field
+from sensors.models import SensorType, Sensor
+from data_collection.models import SensorReading
+
 
 # Register your models here.
 
@@ -36,7 +40,7 @@ class SensorAdmin(admin.ModelAdmin):
             'fields': ('field', 'name', 'sensor_type', 'device_id', 'status', 'is_active', 'description')
         }),
         ('Location & Depth', {
-            'fields': ('latitude', 'longitude', 'depth', 'installation_date')
+            'fields': ('latitude', 'longitude', 'depth')
         }),
         ('Calibration', {
             'fields': ('calibration_slope', 'calibration_offset', 'last_calibration')
@@ -49,8 +53,8 @@ class SensorAdmin(admin.ModelAdmin):
 @admin.register(SensorReading)
 class SensorReadingAdmin(admin.ModelAdmin):
     list_display = ('sensor', 'value', 'timestamp')
-    list_filter = ('sensor__field__farm', 'sensor__field', 'sensor__sensor_type', 'timestamp')
-    search_fields = ('sensor__name', 'sensor__device_id', 'sensor__field__name')
+    list_filter = ('sensor', 'sensor__sensor_type', 'timestamp')
+    search_fields = ('sensor__name', 'sensor__device_id')
     date_hierarchy = 'timestamp'
     raw_id_fields = ('sensor',)
 

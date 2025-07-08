@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'irrigation', 
     'predictions',
     'fields',
+    'farms',
+    'sensors',
+    
     
 ]
 
@@ -51,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'ryeko_terramoist.urls'
@@ -175,6 +179,8 @@ LOGGING = {
 
 # Weather API
 WEATHER_API_KEY = '03d758ad12df45f05330bc3d12f2f440'
+LOGIN_URL = '/login/'
+
 
 # settings.py
 

@@ -1,0 +1,319 @@
+{% extends 'farms/base.html' %}
+
+{% block title %}Create New Farm{% endblock %}
+
+{% block content %}
+<div class="farm-create-container">
+    <div class="farm-create-card">
+        <div class="card-header">
+            <h2><i class="fas fa-tractor me-2"></i>Create New Farm</h2>
+        </div>
+        
+        <div class="card-body">
+            <form method="post" class="farm-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                        <i class="fas fa-signature me-1"></i> Farm Name
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ form.name.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.owner.id_for_label }}" class="form-label">
+                        <i class="fas fa-user-tie me-1"></i> Owner
+                    </label>
+                    {{ form.owner }}
+                    {% if form.owner.errors %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ form.owner.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.location.id_for_label }}" class="form-label">
+                        <i class="fas fa-map-marker-alt me-1"></i> Location
+                    </label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ form.location.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="{{ form.total_fields.id_for_label }}" class="form-label">
+                            <i class="fas fa-map-marked-alt me-1"></i> Total Fields
+                        </label>
+                        {{ form.total_fields }}
+                        {% if form.total_fields.errors %}
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ form.total_fields.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label for="{{ form.total_area.id_for_label }}" class="form-label">
+                            <i class="fas fa-expand-arrows-alt me-1"></i> Total Area (acres)
+                        </label>
+                        {{ form.total_area }}
+                        {% if form.total_area.errors %}
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ form.total_area.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'users:dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </a>
+                    <button type="submit" name="save_only" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Only
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Farm Create Page Styles */
+:root {
+    --primary: #4CAF50;
+    --primary-light: #E8F5E9;
+    --secondary: #2196F3;
+    --danger: #F44336;
+    --dark: #263238;
+    --light: #f5f7fa;
+    --gray: #90A4AE;
+    --gray-light: #CFD8DC;
+}
+
+.farm-create-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.farm-create-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.card-header {
+    background: var(--primary);
+    color: white;
+    padding: 20px;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.card-header i {
+    font-size: 1.2rem;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.farm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+}
+
+.form-label i {
+    margin-right: 8px;
+    color: var(--gray);
+    width: 20px;
+    text-align: center;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--gray-light);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    outline: none;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.error-message {
+    color: var(--danger);
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.error-message i {
+    margin-right: 5px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn i {
+    margin-right: 8px;
+}
+
+.btn-secondary {
+    background: white;
+    border: 1px solid var(--gray-light);
+    color: var(--dark);
+}
+
+.btn-secondary:hover {
+    background: #f5f5f5;
+}
+
+.btn-primary {
+    background: var(--primary);
+    border: 1px solid var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #3d8b40;
+    border-color: #3d8b40;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .farm-create-container {
+        padding: 15px;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add focus styles to form inputs
+    const inputs = document.querySelectorAll('.form-control');
+    
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentNode.querySelector('.form-label').style.color = 'var(--primary)';
+            this.parentNode.querySelector('.form-label i').style.color = 'var(--primary)';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentNode.querySelector('.form-label').style.color = 'var(--dark)';
+            this.parentNode.querySelector('.form-label i').style.color = 'var(--gray)';
+        });
+    });
+    
+    // Add loading state to submit button
+    const submitButton = document.querySelector('button[type="submit"]');
+    
+    if (submitButton) {
+        submitButton.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            this.disabled = true;
+            
+            // Submit the form programmatically
+            this.form.submit();
+        });
+    }
+    
+    // Format total area input
+    const totalAreaInput = document.querySelector('#{{ form.total_area.id_for_label }}');
+    
+    if (totalAreaInput) {
+        totalAreaInput.addEventListener('blur', function() {
+            if (this.value && !isNaN(this.value)) {
+                this.value = parseFloat(this.value).toFixed(2);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

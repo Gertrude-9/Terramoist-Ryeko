@@ -1,0 +1,41 @@
+{% extends 'farms/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ farm.name }}</h1>
+    <a href="{% url 'farms:farm_list' %}" class="btn btn-outline-secondary">Back to Farms</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Farm Details</h5>
+        <p><strong>Location:</strong> {{ farm.location }}</p>
+        <p><strong>Total Fields:</strong> {{ field_count }}</p>
+        <p><strong>Total Area:</strong> {{ total_area|floatformat:2 }} hectares</p>
+    </div>
+</div>
+
+<h3>Fields</h3>
+<div class="row">
+    {% for field in fields %}
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{% url 'fields:field_detail' field.id %}">{{ field.name }}</a>
+                </h5>
+                <p class="card-text">
+                    <strong>Area:</strong> {{ field.area|floatformat:2 }} ha<br>
+                    <strong>Crop:</strong> {{ field.crop_type|default:"Not specified" }}<br>
+                    <strong>Sensors:</strong> {{ field.sensors.count }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">No fields in this farm yet.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

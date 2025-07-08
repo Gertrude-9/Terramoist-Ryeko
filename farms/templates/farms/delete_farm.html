@@ -1,0 +1,27 @@
+{% extends 'farms/base.html' %}
+
+{% block title %}Delete Farm{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h2 class="mb-0">Delete Farm</h2>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete the farm <strong>{{ farm.name }}</strong>?</p>
+                <p class="text-danger">This action cannot be undone. All associated fields and sensors will also be deleted.</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'farm_detail' farm.id %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
