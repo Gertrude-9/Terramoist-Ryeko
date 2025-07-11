@@ -52,7 +52,7 @@
     
     /* Main content area */
     .content-area {
-      margin-left: 220px;
+      margin-left: 100px;
       padding: 20px;
       color: #000000; /* Ensure all text is black */
     }
@@ -110,7 +110,7 @@
       margin: 50px 0;
     }
     
-    /* Additional styling for sidebar elements */
+    {% comment %} /* Additional styling for sidebar elements */
     .sidebar-brand {
       padding: 15px;
       border-bottom: 1px solid #e9ecef;
@@ -135,7 +135,7 @@
       letter-spacing: 0.5px;
       padding: 0 15px;
       margin-bottom: 10px;
-    }
+    } {% endcomment %}
     
     /* Ensure all text in main content is black */
     .content-area h1,
@@ -191,7 +191,7 @@
     </div>
   </nav> {% endcomment %}
 
-  <div class="sidebar d-flex flex-column p-3">
+  {% comment %} <div class="sidebar d-flex flex-column p-3">
     <a href="{% url 'fields:dashboard' %}" class="nav-link">
       <i class="fas fa-tachometer-alt me-2"></i> Dashboard
     </a>
@@ -204,7 +204,7 @@
     <a href="#" class="nav-link">
       <i class="fas fa-cog me-2"></i> Settings
     </a>
-  </div>
+  </div> {% endcomment %}
 
   <main class="content-area">
     <div class="container mt-4">

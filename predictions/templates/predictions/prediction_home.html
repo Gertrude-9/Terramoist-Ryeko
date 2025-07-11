@@ -1,0 +1,167 @@
+{% extends "predictions/base.html" %}
+
+{% block title %}Smart Irrigation Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>Welcome, {{ user.username }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>This system uses AI to analyze field conditions and provide irrigation recommendations.</p>
+                    {% comment %} <a href="{% url 'fields:field_create' %}" class="btn btn-success">Add New Field</a> {% endcomment %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-4 text-center">
+                            <h3>{{ fields_count }}</h3>
+                            <p class="text-muted">Fields</p>
+                        </div>
+                        <div class="col-4 text-center">
+                            <h3>{{ active_alerts }}</h3>
+                            <p class="text-muted">Alerts</p>
+                        </div>
+                        <div class="col-4 text-center">
+                            <h3>{{ pending_tasks }}</h3>
+                            <p class="text-muted">Tasks</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Your Fields</h5>
+        </div>
+        <div class="card-body">
+            {% if fields %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Field Name</th>
+                            <th>Crop Type</th>
+                            <th>Location</th>
+                            <th>Size (ha)</th>
+                            <th>Last Reading</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field in fields %}
+                        <tr>
+                            <td>{{ field.name }}</td>
+                            <td>{{ field.crop_type }}</td>
+                            <td>{{ field.location }}</td>
+                            <td>{{ field.size_hectares }}</td>
+                            <td>
+                                {% if field.sensor_data.first %}
+                                {{ field.sensor_data.first.timestamp|timesince }} ago
+                                {% else %}
+                                No data
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if field.sensor_data.first %}
+                                {% with prediction=field.predictions.first %}
+                                {% if prediction.recommendation == 'IRRIGATE' %}
+                                <span class="badge badge-danger">Needs Irrigation</span>
+                                {% elif prediction.recommendation == 'MONITOR' %}
+                                <span class="badge badge-warning">Monitor</span>
+                                {% else %}
+                                <span class="badge badge-success">Normal</span>
+                                {% endif %}
+                                {% endwith %}
+                                {% else %}
+                                <span class="badge badge-secondary">No Data</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'field_insights' field.id %}" class="btn btn-sm btn-info">Insights</a>
+                                <a href="{% url 'get_prediction' field.id %}" class="btn btn-sm btn-primary">Predict</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>You don't have any fields yet. <a href="{% url 'fields:field_list' %}">Add your first field</a>.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Alerts</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_alerts %}
+                    <div class="list-group">
+                        {% for alert in recent_alerts %}
+                        <a href="#" class="list-group-item list-group-item-action {% if alert.urgent %}list-group-item-danger{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ alert.field.name }}</h6>
+                                <small>{{ alert.timestamp|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1">{{ alert.message }}</p>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p>No recent alerts</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>System Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <span>AI Model Status</span>
+                                <span class="badge badge-success">Active</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <span>Sensors Reporting</span>
+                                <span>{{ active_sensors }}/{{ total_sensors }}</span>
+                            </div>
+                            <div class="progress mt-2" style="height: 5px;">
+                                <div class="progress-bar" role="progressbar" style="width: {{ sensor_percentage }}%;" aria-valuenow="{{ sensor_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <span>Last Model Update</span>
+                                <span>{{ last_update|timesince }} ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

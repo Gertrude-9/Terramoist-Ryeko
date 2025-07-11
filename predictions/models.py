@@ -1,167 +1,215 @@
-# models.py
+
+#from .models import Field
 from django.db import models
-from django.utils import timezone
-import json
+from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.utils import timezone
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
+import joblib
+import os
 
-class SoilSensor(models.Model):
-    """Model for soil moisture sensors"""
-    SENSOR_TYPES = [
-        ('capacitive', 'Capacitive'),
-        ('resistive', 'Resistive'), 
-        ('tensiometer', 'Tensiometer'),
-        ('tdr', 'Time Domain Reflectometry'),
-    ]
-    
+class Field(models.Model):
     name = models.CharField(max_length=100)
-    sensor_id = models.CharField(max_length=50, unique=True)
-    sensor_type = models.CharField(max_length=20, choices=SENSOR_TYPES)
-    location = models.CharField(max_length=200)
-    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
-    depth_cm = models.IntegerField(help_text="Sensor depth in centimeters")
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-
+    location = models.CharField(max_length=200)
+    size_hectares = models.FloatField()
+    crop_type = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
     def __str__(self):
-        return f"{self.name} ({self.sensor_id})"
+        return f"{self.name} - {self.crop_type}"
 
-class SoilMoistureReading(models.Model):
-    """Model for individual soil moisture readings"""
-    sensor = models.ForeignKey(SoilSensor, on_delete=models.CASCADE, related_name='readings')
-    moisture_percentage = models.FloatField(help_text="Moisture percentage (0-100)")
-    temperature_celsius = models.FloatField(null=True, blank=True)
-    humidity_percentage = models.FloatField(null=True, blank=True)
+class SensorData(models.Model):
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='sensor_data')
+    soil_moisture = models.FloatField(help_text="Soil moisture percentage (0-100)")
+    temperature = models.FloatField(help_text="Temperature in Celsius")
+    humidity = models.FloatField(help_text="Humidity percentage (0-100)")
     timestamp = models.DateTimeField(default=timezone.now)
-    raw_value = models.IntegerField(null=True, blank=True, help_text="Raw sensor reading")
     
     class Meta:
         ordering = ['-timestamp']
-        indexes = [
-            models.Index(fields=['sensor', '-timestamp']),
-            models.Index(fields=['timestamp']),
-        ]
-
-    def __str__(self):
-        return f"{self.sensor.name} - {self.moisture_percentage}% at {self.timestamp}"
-
-class PlantProfile(models.Model):
-    """Model for different plant types and their moisture requirements"""
-    PLANT_CATEGORIES = [
-        ('vegetable', 'Vegetable'),
-        ('fruit', 'Fruit'),
-        ('herb', 'Herb'),
-        ('flower', 'Flower'),
-        ('tree', 'Tree'),
-        ('grass', 'Grass/Lawn'),
-        ('succulent', 'Succulent'),
-    ]
-    
-    name = models.CharField(max_length=100)
-    category = models.CharField(max_length=20, choices=PLANT_CATEGORIES)
-    optimal_moisture_min = models.FloatField(help_text="Minimum optimal moisture %")
-    optimal_moisture_max = models.FloatField(help_text="Maximum optimal moisture %")
-    critical_low_moisture = models.FloatField(help_text="Critical low moisture threshold %")
-    critical_high_moisture = models.FloatField(help_text="Critical high moisture threshold %")
-    watering_frequency_days = models.IntegerField(help_text="Typical watering frequency in days")
-    growth_season_start = models.IntegerField(help_text="Growing season start month (1-12)")
-    growth_season_end = models.IntegerField(help_text="Growing season end month (1-12)")
-    description = models.TextField(blank=True)
     
     def __str__(self):
-        return f"{self.name} ({self.category})"
+        return f"{self.field.name} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
 
-class SensorPlantAssignment(models.Model):
-    """Model to assign plant profiles to sensors"""
-    sensor = models.ForeignKey(SoilSensor, on_delete=models.CASCADE)
-    plant_profile = models.ForeignKey(PlantProfile, on_delete=models.CASCADE)
-    assigned_date = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
-    notes = models.TextField(blank=True)
-    
-    class Meta:
-        unique_together = ['sensor', 'plant_profile']
-
-class AIInsight(models.Model):
-    """Model for AI-generated insights"""
-    INSIGHT_TYPES = [
-        ('watering_recommendation', 'Watering Recommendation'),
-        ('moisture_trend', 'Moisture Trend Analysis'),
-        ('plant_health', 'Plant Health Assessment'),
-        ('seasonal_pattern', 'Seasonal Pattern'),
-        ('anomaly_detection', 'Anomaly Detection'),
-        ('optimization', 'Optimization Suggestion'),
-        ('alert', 'Alert/Warning'),
+class IrrigationPrediction(models.Model):
+    RECOMMENDATION_CHOICES = [
+        ('IRRIGATE', 'Irrigate Now'),
+        ('WAIT', 'Wait'),
+        ('MONITOR', 'Monitor Closely'),
     ]
     
-    PRIORITY_LEVELS = [
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
-        ('critical', 'Critical'),
-    ]
-    
-    sensor = models.ForeignKey(SoilSensor, on_delete=models.CASCADE, related_name='insights')
-    insight_type = models.CharField(max_length=30, choices=INSIGHT_TYPES)
-    priority = models.CharField(max_length=10, choices=PRIORITY_LEVELS, default='medium')
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    recommendation = models.TextField(blank=True)
-    confidence_score = models.FloatField(help_text="AI confidence (0-1)")
-    data_analyzed = models.JSONField(default=dict, help_text="Metadata about analyzed data")
-    is_read = models.BooleanField(default=False)
-    is_dismissed = models.BooleanField(default=False)
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='predictions')
+    sensor_data = models.ForeignKey(SensorData, on_delete=models.CASCADE)
+    recommendation = models.CharField(max_length=10, choices=RECOMMENDATION_CHOICES)
+    confidence_score = models.FloatField(help_text="Confidence score (0-1)")
+    reasoning = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
         ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['sensor', '-created_at']),
-            models.Index(fields=['priority', 'is_read']),
-        ]
 
-    def __str__(self):
-        return f"{self.title} - {self.sensor.name}"
-
-class WeatherData(models.Model):
-    """Model for weather data that affects soil moisture"""
-    location = models.CharField(max_length=100)
-    latitude = models.DecimalField(max_digits=10, decimal_places=8)
-    longitude = models.DecimalField(max_digits=11, decimal_places=8)
-    timestamp = models.DateTimeField()
-    temperature_celsius = models.FloatField()
-    humidity_percentage = models.FloatField()
-    precipitation_mm = models.FloatField(default=0)
-    wind_speed_kmh = models.FloatField(null=True, blank=True)
-    pressure_hpa = models.FloatField(null=True, blank=True)
-    uv_index = models.FloatField(null=True, blank=True)
+class AIInsightsManager:
+    """Manager class for AI insights and predictions"""
     
-    class Meta:
-        unique_together = ['location', 'timestamp']
-        ordering = ['-timestamp']
-
-class UserPreferences(models.Model):
-    """Model for user AI insight preferences"""
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    enable_ai_insights = models.BooleanField(default=True)
-    insight_frequency = models.CharField(
-        max_length=20, 
-        choices=[
-            ('realtime', 'Real-time'),
-            ('hourly', 'Hourly'),
-            ('daily', 'Daily'),
-            ('weekly', 'Weekly'),
-        ],
-        default='daily'
-    )
-    notification_types = models.JSONField(
-        default=list,
-        help_text="List of insight types to receive notifications for"
-    )
-    timezone = models.CharField(max_length=50, default='UTC')
+    def __init__(self):
+        self.model = None
+        self.scaler = None
+        self.load_or_create_model()
     
-    def __str__(self):
-        return f"{self.user.username} - AI Preferences"
+    def load_or_create_model(self):
+        """Load existing model or create a new one"""
+        try:
+            self.model = joblib.load('irrigation_model.pkl')
+            self.scaler = joblib.load('irrigation_scaler.pkl')
+        except FileNotFoundError:
+            self.create_initial_model()
+    
+    def create_initial_model(self):
+        """Create initial model with sample data"""
+        # Sample training data based on agricultural best practices
+        training_data = np.array([
+            [15, 35, 40],  # Low moisture, high temp, low humidity -> IRRIGATE
+            [45, 25, 60],  # Good moisture, moderate temp, good humidity -> WAIT
+            [25, 30, 45],  # Moderate moisture, moderate temp, moderate humidity -> MONITOR
+            [10, 40, 35],  # Very low moisture, high temp, low humidity -> IRRIGATE
+            [60, 20, 70],  # High moisture, low temp, high humidity -> WAIT
+            [35, 28, 55],  # Good moisture, optimal temp, good humidity -> WAIT
+            [20, 38, 30],  # Low moisture, high temp, very low humidity -> IRRIGATE
+            [50, 22, 65],  # High moisture, low temp, high humidity -> WAIT
+            [30, 32, 50],  # Moderate moisture, moderate temp, moderate humidity -> MONITOR
+            [12, 42, 25],  # Very low moisture, very high temp, very low humidity -> IRRIGATE
+        ])
+        
+        # Labels: 0=WAIT, 1=MONITOR, 2=IRRIGATE
+        labels = np.array([2, 0, 1, 2, 0, 0, 2, 0, 1, 2])
+        
+        self.scaler = StandardScaler()
+        scaled_data = self.scaler.fit_transform(training_data)
+        
+        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
+        self.model.fit(scaled_data, labels)
+        
+        # Save the model
+        joblib.dump(self.model, 'irrigation_model.pkl')
+        joblib.dump(self.scaler, 'irrigation_scaler.pkl')
+    
+    def get_irrigation_recommendation(self, soil_moisture, temperature, humidity):
+        """Get irrigation recommendation based on sensor data"""
+        # Prepare input data
+        input_data = np.array([[soil_moisture, temperature, humidity]])
+        scaled_input = self.scaler.transform(input_data)
+        
+        # Make prediction
+        prediction = self.model.predict(scaled_input)[0]
+        confidence = np.max(self.model.predict_proba(scaled_input))
+        
+        # Map prediction to recommendation
+        recommendation_map = {0: 'WAIT', 1: 'MONITOR', 2: 'IRRIGATE'}
+        recommendation = recommendation_map[prediction]
+        
+        # Generate reasoning
+        reasoning = self.generate_reasoning(soil_moisture, temperature, humidity, recommendation)
+        
+        return {
+            'recommendation': recommendation,
+            'confidence_score': confidence,
+            'reasoning': reasoning
+        }
+    
+    def generate_reasoning(self, soil_moisture, temperature, humidity, recommendation):
+        """Generate human-readable reasoning for the recommendation"""
+        reasoning_parts = []
+        
+        # Soil moisture analysis
+        if soil_moisture < 20:
+            reasoning_parts.append("Soil moisture is critically low")
+        elif soil_moisture < 35:
+            reasoning_parts.append("Soil moisture is below optimal levels")
+        elif soil_moisture > 60:
+            reasoning_parts.append("Soil moisture is adequately high")
+        else:
+            reasoning_parts.append("Soil moisture is at moderate levels")
+        
+        # Temperature analysis
+        if temperature > 35:
+            reasoning_parts.append("high temperature increases water stress")
+        elif temperature < 15:
+            reasoning_parts.append("low temperature reduces water demand")
+        else:
+            reasoning_parts.append("temperature is within normal range")
+        
+        # Humidity analysis
+        if humidity < 40:
+            reasoning_parts.append("low humidity increases evaporation")
+        elif humidity > 70:
+            reasoning_parts.append("high humidity reduces water loss")
+        else:
+            reasoning_parts.append("humidity is at moderate levels")
+        
+        # Combine reasoning
+        base_reasoning = ". ".join(reasoning_parts).capitalize()
+        
+        if recommendation == 'IRRIGATE':
+            return f"{base_reasoning}. Immediate irrigation is recommended to prevent crop stress."
+        elif recommendation == 'MONITOR':
+            return f"{base_reasoning}. Continue monitoring; irrigation may be needed soon."
+        else:
+            return f"{base_reasoning}. Current conditions are adequate; irrigation can be delayed."
+    
+    def get_insights_by_type(self, field_id, insight_type='all', days=7):
+        """Get insights filtered by type for the last N days"""
+        from datetime import timedelta
+        
+        end_date = timezone.now()
+        start_date = end_date - timedelta(days=days)
+        
+        sensor_data = SensorData.objects.filter(
+            field_id=field_id,
+            timestamp__gte=start_date,
+            timestamp__lte=end_date
+        ).order_by('-timestamp')
+        
+        insights = {
+            'soil_moisture': [],
+            'temperature': [],
+            'humidity': [],
+            'predictions': []
+        }
+        
+        for data in sensor_data:
+            prediction = self.get_irrigation_recommendation(
+                data.soil_moisture, data.temperature, data.humidity
+            )
+            
+            if insight_type == 'all' or insight_type == 'soil_moisture':
+                insights['soil_moisture'].append({
+                    'timestamp': data.timestamp,
+                    'value': data.soil_moisture,
+                    'status': 'critical' if data.soil_moisture < 20 else 'low' if data.soil_moisture < 35 else 'good'
+                })
+            
+            if insight_type == 'all' or insight_type == 'temperature':
+                insights['temperature'].append({
+                    'timestamp': data.timestamp,
+                    'value': data.temperature,
+                    'status': 'high' if data.temperature > 35 else 'low' if data.temperature < 15 else 'normal'
+                })
+            
+            if insight_type == 'all' or insight_type == 'humidity':
+                insights['humidity'].append({
+                    'timestamp': data.timestamp,
+                    'value': data.humidity,
+                    'status': 'low' if data.humidity < 40 else 'high' if data.humidity > 70 else 'normal'
+                })
+            
+            insights['predictions'].append({
+                'timestamp': data.timestamp,
+                'recommendation': prediction['recommendation'],
+                'confidence': prediction['confidence_score'],
+                'reasoning': prediction['reasoning']
+            })
+        
+        return insights

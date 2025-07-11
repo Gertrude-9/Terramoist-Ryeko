@@ -1,0 +1,1231 @@
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Insights Dashboard - Terramoist</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-bg: #1a1d29;
+            --card-bg: #ffffff;
+            --border-color: #e8ecf4;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header Styling */
+        .dashboard-header {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .dashboard-header h1 {
+            font-weight: 700;
+            font-size: 2.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .dashboard-header .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .stats-card.success::before {
+            background: var(--success-gradient);
+        }
+
+        .stats-card.warning::before {
+            background: var(--warning-gradient);
+        }
+
+        .stats-card.info::before {
+            background: var(--info-gradient);
+        }
+
+        .stats-card h3 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .stats-card p {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        /* Main Cards */
+        .main-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .main-card:hover {
+            box-shadow: var(--shadow-xl);
+        }
+
+        .main-card .card-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .main-card .card-header h5 {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .main-card .card-body {
+            padding: 2rem;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            padding: 1rem;
+            background: linear-gradient(135deg, #fafbfc 0%, #f4f6f8 100%);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Sensor Chips */
+        .sensor-chip {
+            display: inline-block;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sensor-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .sensor-chip.selected {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: var(--shadow-md);
+        }
+
+        .sensor-chip.selected::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+        }
+
+        /* Buttons */
+        .btn-modern {
+            border-radius: 12px;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-modern:hover::before {
+            left: 100%;
+        }
+
+        .btn-modern.btn-success {
+            background: var(--success-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-modern.btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-modern.btn-warning {
+            background: var(--warning-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Insight Cards */
+        .insight-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .insight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .insight-card.unread {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+        }
+
+        .insight-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .insight-card .card-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .insight-card .card-text {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .insight-card .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .insight-card .btn-sm {
+            padding: 0.375rem 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .insight-card .btn-outline-success:hover {
+            background: var(--success-gradient);
+            border-color: transparent;
+        }
+
+        .insight-card .btn-outline-danger:hover {
+            background: var(--warning-gradient);
+            border-color: transparent;
+        }
+
+        .insight-card .btn-outline-primary:hover {
+            background: var(--primary-gradient);
+            border-color: transparent;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h4 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Alert Styling */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-md);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-card {
+                padding: 1.5rem;
+            }
+
+            .main-card .card-body {
+                padding: 1.5rem;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        /* Smooth Animations */
+        * {
+            transition: all 0.3s ease;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+        }
+    </style>
+</head> {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irrigation Insights - {{ field.name }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg,rgb(212, 213, 216) 0%,rgb(208, 207, 209) 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .field-info {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .field-details h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .field-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .current-status {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-width: 250px;
+        }
+
+        .status-recommendation {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-irrigate { color: #dc3545; }
+        .recommendation-monitor { color: #fd7e14; }
+        .recommendation-wait { color: #28a745; }
+
+        .confidence-score {
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        select, input {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .insight-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .insight-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .insight-icon {
+            font-size: 2rem;
+            padding: 10px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .insight-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .current-value {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .current-value .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .current-value .unit {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .status-indicator {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-critical { background: #dc3545; color: white; }
+        .status-low { background: #fd7e14; color: white; }
+        .status-good { background: #28a745; color: white; }
+        .status-high { background: #17a2b8; color: white; }
+        .status-normal { background: #6c757d; color: white; }
+
+        .predictions-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .predictions-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .predictions-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .prediction-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .prediction-time {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .prediction-reasoning {
+            color: #495057;
+            line-height: 1.5;
+        }
+
+        .prediction-confidence {
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #fd7e14, #dc3545);
+            transition: width 0.3s ease;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .api-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .api-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .api-input {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .api-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .api-input input {
+            width: 100%;
+            margin: 0;
+        }
+
+        .api-response {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .api-response pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .field-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .prediction-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="field-info">
+                <div class="field-details">
+                    <h1>🌱 {{ field.name }}</h1>
+                    <div class="field-meta">
+                        <span class="meta-item">📍 {{ field.location }}</span>
+                        <span class="meta-item">🌾 {{ field.crop_type }}</span>
+                        <span class="meta-item">📏 {{ field.size_hectares }} hectares</span>
+                    </div>
+                </div>
+                
+                {% if current_prediction %}
+                <div class="current-status">
+                    <div class="status-recommendation recommendation-{{ current_prediction.recommendation|lower }}">
+                        {% if current_prediction.recommendation == 'IRRIGATE' %}
+                            💧 Irrigate Now
+                        {% elif current_prediction.recommendation == 'MONITOR' %}
+                            👀 Monitor Closely
+                        {% else %}
+                            ⏱️ Wait
+                        {% endif %}
+                    </div>
+                    <div class="confidence-score">
+                        <small>Confidence: {{ current_prediction.confidence_score|floatformat:1 }}%</small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="controls">
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="insightType">📊 Insight Type</label>
+                    <select id="insightType" onchange="updateInsights()">
+                        <option value="all" {% if insight_type == 'all' %}selected{% endif %}>All Insights</option>
+                        <option value="soil_moisture" {% if insight_type == 'soil_moisture' %}selected{% endif %}>💧 Soil Moisture</option>
+                        <option value="temperature" {% if insight_type == 'temperature' %}selected{% endif %}>🌡️ Temperature</option>
+                        <option value="humidity" {% if insight_type == 'humidity' %}selected{% endif %}>💨 Humidity</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="dayRange">📅 Time Range</label>
+                    <select id="dayRange" onchange="updateInsights()">
+                        <option value="1" {% if days == 1 %}selected{% endif %}>Last 24 Hours</option>
+                        <option value="3" {% if days == 3 %}selected{% endif %}>Last 3 Days</option>
+                        <option value="7" {% if days == 7 %}selected{% endif %}>Last Week</option>
+                        <option value="14" {% if days == 14 %}selected{% endif %}>Last 2 Weeks</option>
+                        <option value="30" {% if days == 30 %}selected{% endif %}>Last Month</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh Data</button>
+                <button class="btn btn-secondary" onclick="exportData()">📥 Export</button>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p>Loading insights...</p>
+        </div>
+
+        <!-- Insights Grid -->
+        <div class="insights-grid" id="insightsGrid">
+            {% if insights.soil_moisture and insight_type != 'temperature' and insight_type != 'humidity' %}
+            <div class="insight-card">
+                <div class="insight-header">
+                    <div class="insight-icon">💧</div>
+                    <div class="insight-title">Soil Moisture</div>
+                </div>
+                
+                {% if latest_data %}
+                <div class="current-value">
+                    <div class="value">{{ latest_data.soil_moisture|floatformat:1 }}</div>
+                    <div class="unit">% moisture</div>
+                </div>
+                {% endif %}
+                
+                <div class="chart-container">
+                    <canvas id="moistureChart"></canvas>
+                </div>
+                
+                <div class="status-indicators">
+                    {% if latest_data.soil_moisture < 20 %}
+                        <span class="status-indicator status-critical">Critical</span>
+                    {% elif latest_data.soil_moisture < 35 %}
+                        <span class="status-indicator status-low">Low</span>
+                    {% else %}
+                        <span class="status-indicator status-good">Good</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if insights.temperature and insight_type != 'soil_moisture' and insight_type != 'humidity' %}
+            <div class="insight-card">
+                <div class="insight-header">
+                    <div class="insight-icon">🌡️</div>
+                    <div class="insight-title">Temperature</div>
+                </div>
+                
+                {% if latest_data %}
+                <div class="current-value">
+                    <div class="value">{{ latest_data.temperature|floatformat:1 }}</div>
+                    <div class="unit">°C</div>
+                </div>
+                {% endif %}
+                
+                <div class="chart-container">
+                    <canvas id="temperatureChart"></canvas>
+                </div>
+                
+                <div class="status-indicators">
+                    {% if latest_data.temperature > 35 %}
+                        <span class="status-indicator status-high">High</span>
+                    {% elif latest_data.temperature < 15 %}
+                        <span class="status-indicator status-low">Low</span>
+                    {% else %}
+                        <span class="status-indicator status-normal">Normal</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if insights.humidity and insight_type != 'soil_moisture' and insight_type != 'temperature' %}
+            <div class="insight-card">
+                <div class="insight-header">
+                    <div class="insight-icon">💨</div>
+                    <div class="insight-title">Humidity</div>
+                </div>
+                
+                {% if latest_data %}
+                <div class="current-value">
+                    <div class="value">{{ latest_data.humidity|floatformat:1 }}</div>
+                    <div class="unit">% humidity</div>
+                </div>
+                {% endif %}
+                
+                <div class="chart-container">
+                    <canvas id="humidityChart"></canvas>
+                </div>
+                
+                <div class="status-indicators">
+                    {% if latest_data.humidity < 40 %}
+                        <span class="status-indicator status-low">Low</span>
+                    {% elif latest_data.humidity > 70 %}
+                        <span class="status-indicator status-high">High</span>
+                    {% else %}
+                        <span class="status-indicator status-normal">Normal</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Predictions Section -->
+        {% if insights.predictions %}
+        <div class="predictions-section">
+            <div class="predictions-header">
+                <div class="insight-icon">🤖</div>
+                <div class="insight-title">AI Predictions & Recommendations</div>
+            </div>
+            
+            <div class="predictions-list">
+                {% for prediction in insights.predictions|slice:":10" %}
+                <div class="prediction-item">
+                    <div class="prediction-time">
+                        {{ prediction.timestamp|date:"M d, H:i" }}
+                    </div>
+                    
+                    <div class="prediction-content">
+                        <div class="status-recommendation recommendation-{{ prediction.recommendation|lower }}">
+                            {% if prediction.recommendation == 'IRRIGATE' %}
+                                💧 Irrigate Now
+                            {% elif prediction.recommendation == 'MONITOR' %}
+                                👀 Monitor Closely
+                            {% else %}
+                                ⏱️ Wait
+                            {% endif %}
+                        </div>
+                        <div class="prediction-reasoning">
+                            {{ prediction.reasoning }}
+                        </div>
+                    </div>
+                    
+                    <div class="prediction-confidence">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: {{ prediction.confidence|floatformat:0 }}%"></div>
+                        </div>
+                        <small>{{ prediction.confidence|floatformat:1 }}%</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- API Testing Section -->
+        <div class="api-section">
+            <div class="insight-header">
+                <div class="insight-icon">⚡</div>
+                <div class="insight-title">API Testing</div>
+            </div>
+            
+            <div class="api-controls">
+                <div class="api-input">
+                    <label for="apiSoilMoisture">💧 Soil Moisture (%)</label>
+                    <input type="number" id="apiSoilMoisture" min="0" max="100" step="0.1" value="25">
+                </div>
+                
+                <div class="api-input">
+                    <label for="apiTemperature">🌡️ Temperature (°C)</label>
+                    <input type="number" id="apiTemperature" min="-20" max="60" step="0.1" value="30">
+                </div>
+                
+                <div class="api-input">
+                    <label for="apiHumidity">💨 Humidity (%)</label>
+                    <input type="number" id="apiHumidity" min="0" max="100" step="0.1" value="50">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="testPrediction()">🔮 Test Prediction</button>
+            
+            <div class="api-response" id="apiResponse" style="display: none;">
+                <h4>API Response:</h4>
+                <pre id="apiResponseContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let moistureChart, temperatureChart, humidityChart;
+        const fieldId = {{ field.id }};
+        
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+
+        function initializeCharts() {
+            // Initialize Soil Moisture Chart
+            const moistureCtx = document.getElementById('moistureChart');
+            if (moistureCtx) {
+                moistureChart = new Chart(moistureCtx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ insights.soil_moisture|safe }}.map(item => new Date(item.timestamp).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Soil Moisture (%)',
+                            data: {{ insights.soil_moisture|safe }}.map(item => item.value),
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initialize Temperature Chart
+            const temperatureCtx = document.getElementById('temperatureChart');
+            if (temperatureCtx) {
+                temperatureChart = new Chart(temperatureCtx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ insights.temperature|safe }}.map(item => new Date(item.timestamp).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Temperature (°C)',
+                            data: {{ insights.temperature|safe }}.map(item => item.value),
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initialize Humidity Chart
+            const humidityCtx = document.getElementById('humidityChart');
+            if (humidityCtx) {
+                humidityChart = new Chart(humidityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ insights.humidity|safe }}.map(item => new Date(item.timestamp).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Humidity (%)',
+                            data: {{ insights.humidity|safe }}.map(item => item.value),
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateInsights() {
+            const insightType = document.getElementById('insightType').value;
+            const dayRange = document.getElementById('dayRange').value;
+            
+            showLoading();
+            
+            const url = `/insights/${fieldId}/?type=${insightType}&days=${dayRange}`;
+            window.location.href = url;
+        }
+
+        function refreshData() {
+            showLoading();
+            window.location.reload();
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('insightsGrid').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('insightsGrid').style.display = 'grid';
+        }
+
+        async function testPrediction() {
+            const soilMoisture = parseFloat(document.getElementById('apiSoilMoisture').value);
+            const temperature = parseFloat(document.getElementById('apiTemperature').value);
+            const humidity = parseFloat(document.getElementById('apiHumidity').value);
+            
+            const data = {
+                field_id: fieldId,
+                soil_moisture: soilMoisture,
+                temperature: temperature,
+                humidity: humidity
+            };
+            
+            try {
+                const response = await fetch('/api/predict/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('apiResponseContent').textContent = JSON.stringify(result, null, 2);
+                document.getElementById('apiResponse').style.display = 'block';
+                
+            } catch (error) {
+                document.getElementById('apiResponseContent').textContent = 'Error: ' + error.message;
+                document.getElementById('apiResponse').style.display = 'block';
+            }
+        }
+
+        function exportData() {
+            const insightType = document.getElementById('insightType').value;
+            const dayRange = document.getElementById('dayRange').value;
+            
+            const url = `/api/insights/${fieldId}/?type=${insightType}&days=${dayRange}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

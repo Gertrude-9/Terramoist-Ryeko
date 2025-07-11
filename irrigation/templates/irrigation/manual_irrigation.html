@@ -1,0 +1,66 @@
+{% extends 'irrigation/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>Manual Irrigation Control - {{ field.name }}</h2>
+        </div>
+        <div class="card-body">
+            <!-- Recent Sensor Readings -->
+            <div class="mb-4">
+                <h5>Current Conditions</h5>
+                {% if recent_readings %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Sensor</th>
+                                    <th>Value</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reading in recent_readings %}
+                                <tr>
+                                    <td>{{ reading.sensor.get_sensor_type_display }}</td>
+                                    <td>{{ reading.value }} {{ reading.unit }}</td>
+                                    <td>{{ reading.timestamp|timesince }} ago</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p>No recent sensor data available</p>
+                {% endif %}
+            </div>
+
+            <!-- Irrigation Control Form -->
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="duration">Duration (minutes):</label>
+                    <input type="number" class="form-control" id="duration" 
+                           name="duration" value="{{ default_duration }}" min="1" max="120" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes:</label>
+                    <textarea class="form-control" id="notes" name="notes" 
+                              rows="3" placeholder="Optional notes about this irrigation"></textarea>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'irrigation:dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-tint"></i> Start Irrigation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

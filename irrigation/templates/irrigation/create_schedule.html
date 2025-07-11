@@ -1,124 +1,492 @@
-<!-- templates/irrigation/create_schedule.html -->
 {% extends 'irrigation/base.html' %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Create Irrigation Schedule</h1>
-    <p class="page-subtitle">Set up automated irrigation for your zones</p>
-</div>
+<style>
+    :root {
+        --primary: #4a6fa5;
+        --secondary: #6b8cae;
+        --success: #5cb85c;
+        --info: #5bc0de;
+        --warning: #f0ad4e;
+        --danger: #d9534f;
+        --light: #f8f9fa;
+        --dark: #343a40;
+        --white: #ffffff;
+        --gray-100: #f8f9fa;
+        --gray-200: #e9ecef;
+        --gray-300: #dee2e6;
+        --gray-400: #ced4da;
+        --gray-500: #adb5bd;
+        --gray-600: #6c757d;
+        --gray-700: #495057;
+        --gray-800: #343a40;
+        --gray-900: #212529;
+    }
 
-<div class="card">
-    <div class="card-header">Schedule Details</div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            <div class="grid grid-2">
-                <div>
-                    <div class="form-group">
-                        <label class="form-label" for="name">Schedule Name</label>
-                        <input type="text" id="name" name="name" class="form-control" required 
-                               placeholder="e.g., Morning Garden Watering">
-                    </div>
+    body {
+        font-family: 'Inter', sans-serif; /* A more modern, clean sans-serif font */
+        background-color: var(--gray-100); /* Light background for a fresh feel */
+    }
 
-                  <div class="form-group">
-                    <label class="form-label" for="zone">Irrigation Zone</label>
-                    <select id="zone" name="zone" class="form-control" required>
-                        <option value="">Select a zone</option>
-                        <option value="1">Front Lawn (120 m²)</option>
-                        <option value="2">Backyard Garden (80 m²)</option>
-                        <option value="3">Vegetable Patch (45 m²)</option>
-                        <option value="4">Flower Beds (30 m²)</option>
-                        <option value="5">Greenhouse (25 m²)</option>
-                        <option value="6">Orchard (200 m²)</option>
-                        <option value="7">Hedges (60 m²)</option>
-                        <option value="8">Patio Planters (15 m²)</option>
-                    </select>
-                </div>
+    .page-header {
+        padding: 2.5rem 0; /* More vertical space */
+        margin-bottom: 3rem; /* More separation from content */
+        border-bottom: 1px solid var(--gray-200);
+        background-color: var(--white); /* White background for the header */
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.03); /* Subtle shadow for depth */
+    }
 
-                    <div class="form-group">
-                        <label class="form-label" for="start_time">Start Time</label>
-                        <input type="time" id="start_time" name="start_time" class="form-control" required>
-                    </div>
+    .page-title {
+        font-size: 2.25rem; /* Slightly larger for prominence */
+        font-weight: 700; /* Bolder */
+        color: var(--primary);
+        margin-bottom: 0.75rem; /* More space below title */
+    }
 
-                    <div class="form-group">
-                        <label class="form-label" for="duration_minutes">Duration (minutes)</label>
-                        <input type="number" id="duration_minutes" name="duration_minutes" 
-                               class="form-control" min="1" max="480" required placeholder="30">
-                    </div>
-                </div>
+    .page-subtitle {
+        font-size: 1.15rem; /* Slightly larger */
+        color: var(--gray-600);
+        line-height: 1.6; /* Improved readability */
+    }
 
-                <div>
-                    <div class="form-group">
-                        <label class="form-label" for="frequency">Frequency</label>
-                        <select id="frequency" name="frequency" class="form-control" required>
-                            <option value="daily">Daily</option>
-                            <option value="every_other_day">Every Other Day</option>
-                            <option value="twice_weekly">Twice Weekly</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="custom">Custom</option>
-                        </select>
-                    </div>
+    .card {
+        border: none;
+        border-radius: 0.85rem; /* Slightly more rounded */
+        box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.06); /* Softer, more diffused shadow */
+        transition: all 0.3s ease;
+        overflow: hidden;
+        margin-bottom: 2rem; /* Consistent spacing between cards */
+    }
 
-                    <div class="form-group">
-                        <label class="form-label" for="start_date">Start Date</label>
-                        <input type="date" id="start_date" name="start_date" class="form-control" required>
-                    </div>
+    .card:hover {
+        box-shadow: 0 0.8rem 2.5rem rgba(0, 0, 0, 0.12); /* More pronounced hover effect */
+        transform: translateY(-0.35rem); /* Slightly more lift */
+    }
 
-                    <div class="form-group">
-                        <label class="form-label" for="end_date">End Date (Optional)</label>
-                        <input type="date" id="end_date" name="end_date" class="form-control">
-                    </div>
+    .card-header {
+        background-color: var(--primary);
+        color: white;
+        padding: 1.35rem 1.75rem; /* More padding */
+        border-bottom: none;
+        font-weight: 600; /* Already good, perhaps 700 for more emphasis */
+        font-size: 1.15rem; /* Slightly larger */
+        border-top-left-radius: 0.85rem; /* Match card border-radius */
+        border-top-right-radius: 0.85rem; /* Match card border-radius */
+    }
 
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" name="auto_weather_adjust" id="auto_weather_adjust">
-                            Auto-adjust based on weather conditions
-                        </label>
-                        <small style="color: #6c757d; margin-left: 1.5rem;">
-                            Skip irrigation if rain is predicted or soil moisture is adequate
-                        </small>
-                    </div>
-                </div>
-            </div>
+    .card-header.bg-info {
+        background-color: var(--info) !important;
+    }
 
-            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i>
-                    Create Schedule
-                </button>
-                <a href="{% url 'irrigation:schedule_list' %}" class="btn btn-outline">
-                    Cancel
-                </a>
+    .card-body {
+        padding: 2rem; /* More internal padding */
+    }
 
-            </div>
-        </form>
+    .form-label {
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.6rem; /* More space below label */
+        display: block; /* Ensure label takes full width */
+    }
+
+    .form-control, .form-select {
+        padding: 0.85rem 1.1rem; /* More padding for inputs */
+        border: 1px solid var(--gray-300);
+        border-radius: 0.65rem; /* Slightly more rounded inputs */
+        transition: all 0.3s ease;
+        font-size: 0.95rem; /* Slightly larger font inside inputs */
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.2); /* Softer focus shadow */
+    }
+
+    .btn-group.w-100 .btn {
+        padding: 0.8rem; /* More padding for group buttons */
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .btn-outline-primary {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .btn-outline-primary:hover, .btn-outline-primary.active {
+        background-color: var(--primary);
+        color: white;
+        box-shadow: 0 0.125rem 0.25rem rgba(74, 111, 165, 0.2); /* Subtle shadow on hover/active */
+    }
+
+    .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        padding: 0.85rem 1.75rem; /* More padding for main buttons */
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-radius: 0.65rem; /* Match input border-radius */
+        font-size: 1rem;
+    }
+
+    .btn-primary:hover {
+        background-color: #3a5a8c;
+        border-color: #3a5a8c;
+        transform: translateY(-2px); /* Slightly more pronounced lift */
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-outline-secondary {
+        border-color: var(--gray-300);
+        color: var(--gray-600);
+        padding: 0.85rem 1.75rem; /* More padding */
+        border-radius: 0.65rem; /* Match other buttons */
+        font-size: 1rem;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: var(--gray-200); /* Slightly darker hover for contrast */
+        color: var(--gray-700);
+        border-color: var(--gray-400);
+    }
+
+    .list-group-item {
+        border-color: var(--gray-200);
+        padding: 1.1rem 1.5rem; /* More padding */
+        font-size: 0.95rem;
+    }
+
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .form-switch .form-check-input {
+        width: 2.7em; /* Slightly wider switch */
+        height: 1.6em; /* Slightly taller switch */
+        vertical-align: middle; /* Align better with text */
+    }
+
+    .text-muted {
+        color: var(--gray-500) !important; /* Slightly lighter gray for muted text */
+        line-height: 1.5;
+    }
+
+    #weather-icon {
+        color: var(--info);
+        margin-bottom: 1.2rem; /* More space below icon */
+    }
+
+    #weather-temp {
+        font-weight: 700; /* Bolder temperature */
+        color: var(--dark);
+        font-size: 2.5rem; /* Slightly larger temperature display */
+    }
+
+    .badge {
+        font-weight: 600; /* Bolder badge text */
+        padding: 0.4em 0.7em; /* Slightly more padding */
+        border-radius: 0.35rem; /* Match other rounded elements */
+        font-size: 0.85rem;
+    }
+
+    /* Custom radio button styling */
+    .btn-check:checked + .btn-outline-primary {
+        background-color: var(--primary);
+        color: white;
+        border-color: var(--primary); /* Ensure border color matches */
+    }
+
+    .btn-check:focus + .btn-outline-primary {
+        box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.2);
+    }
+
+    /* Input Group Icon Styling */
+    .input-group-text {
+        background-color: var(--gray-100);
+        border: 1px solid var(--gray-300);
+        border-right: none; /* Blend with input */
+        border-radius: 0.65rem 0 0 0.65rem; /* Rounded only on left */
+        color: var(--gray-600);
+    }
+
+    .input-group .form-control {
+        border-left: none; /* Blend with icon */
+        border-radius: 0 0.65rem 0.65rem 0; /* Rounded only on right */
+    }
+    .input-group .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.2);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .card-header {
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .btn-group.w-100 .btn {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+      <div class="col-lg-8">
+  <div class="card h-100">
+    <div class="card-header">
+      <i class="bi bi-calendar-plus me-2"></i> Schedule Irrigation
     </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-4">
+              <label class="form-label" for="name">Schedule Name</label>
+              <div class="input-group shadow-sm">
+                <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                <input type="text" id="name" name="name" class="form-control" required placeholder="e.g., Morning Corn Field">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label" for="field">Field</label>
+              <select id="field" name="field" class="form-select shadow-sm" required>
+                <option value="">Select a field</option>
+                {% for field in fields %}
+                <option value="{{ field.id }}">
+                  {{ field.name }} ({{ field.crop_type }}, {{ field.area }} ha)
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label" for="start_time">Start Time</label>
+              <div class="input-group shadow-sm">
+                <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                <input type="time" id="start_time" name="start_time" class="form-control" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="mb-4">
+              <label class="form-label" for="duration_minutes">Duration (minutes)</label>
+              <div class="input-group shadow-sm">
+                <span class="input-group-text"><i class="bi bi-hourglass"></i></span>
+                <input type="number" id="duration_minutes" name="duration_minutes" 
+                  class="form-control" min="5" max="240" required value="30">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label" for="frequency">Frequency</label>
+              <select id="frequency" name="frequency" class="form-select shadow-sm" required>
+                <option value="">Select frequency</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <div class="form-check form-switch ps-0">
+                <input class="form-check-input ms-0 mt-0" type="checkbox" name="auto_weather_adjust" id="auto_weather_adjust" checked>
+                <label class="form-check-label ms-3" for="auto_weather_adjust">
+                  <i class="bi bi-cloud-sun me-1"></i> Auto-adjust based on weather
+                </label>
+              </div>
+              <small class="text-muted ms-4 ps-3 d-block">
+                Will skip irrigation if significant rain is predicted or soil moisture is adequate.
+              </small>
+            </div>
+
+            <div class="mb-4">
+              <div class="form-check ps-0">
+                <input class="form-check-input ms-0 mt-0" type="checkbox" name="is_active" id="is_active" checked>
+                <label class="form-check-label ms-3" for="is_active">
+                  <i class="bi bi-toggle-on me-1"></i> Active schedule
+                </label>
+              </div>
+              <small class="text-muted ms-4 ps-3 d-block">
+                Uncheck to disable this schedule without deleting it.
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid gap-3 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+          <a href="{% url 'irrigation:schedule_list' %}" class="btn btn-outline-secondary px-4 py-2">
+            <i class="bi bi-x-circle me-1"></i> Cancel
+          </a>
+          <button type="submit" class="btn btn-primary px-4 py-2 shadow">
+            <i class="bi bi-save me-1"></i> Create Schedule
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
-<script>
-// Set default start date to today
-document.getElementById('start_date').value = new Date().toISOString().split('T')[0];
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-info text-white">
+      <i class="bi bi-calendar-week me-2"></i> 5-Day Weather Forecast
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <!-- Day 1 -->
+        <div class="col-6 col-md-2">
+          <div class="card text-center h-100">
+            <div class="card-body p-2">
+              <h6 class="card-title mb-1">Mon</h6>
+              <div class="mb-2" style="font-size: 2rem;">
+                <i class="bi bi-sun text-warning"></i>
+              </div>
+              <div class="fw-bold">30°C</div>
+              <small class="text-muted">Sunny</small>
+            </div>
+            
+          </div>
+        </div>
+        <!-- Day 2 -->
+        <div class="col-6 col-md-2">
+          <div class="card text-center h-100">
+            <div class="card-body p-2">
+              <h6 class="card-title mb-1">Tue</h6>
+              <div class="mb-2" style="font-size: 2rem;">
+                <i class="bi bi-cloud-drizzle text-primary"></i>
+              </div>
+              <div class="fw-bold">26°C</div>
+              <small class="text-muted">Light rain</small>
+            </div>
+           
+          </div>
+        </div>
+        <!-- Day 3 -->
+        <div class="col-6 col-md-2">
+          <div class="card text-center h-100">
+            <div class="card-body p-2">
+              <h6 class="card-title mb-1">Wed</h6>
+              <div class="mb-2" style="font-size: 2rem;">
+                <i class="bi bi-cloud-sun text-warning"></i>
+              </div>
+              <div class="fw-bold">29°C</div>
+              <small class="text-muted">Partly cloudy</small>
+            </div>
+           
+          </div>
+        </div>
+        <!-- Day 4 -->
+        <div class="col-6 col-md-2">
+          <div class="card text-center h-100">
+            <div class="card-body p-2">
+              <h6 class="card-title mb-1">Thu</h6>
+              <div class="mb-2" style="font-size: 2rem;">
+                <i class="bi bi-cloud text-secondary"></i>
+              </div>
+              <div class="fw-bold">24°C</div>
+              <small class="text-muted">Cloudy</small>
+            </div>
+            
+          </div>
+        </div>
+        <!-- Day 5 -->
+        <div class="col-6 col-md-2">
+          <div class="card text-center h-100">
+            <div class="card-body p-2">
+              <h6 class="card-title mb-1">Fri</h6>
+              <div class="mb-2" style="font-size: 2rem;">
+                <i class="bi bi-cloud-rain text-primary"></i>
+              </div>
+              <div class="fw-bold">22°C</div>
+              <small class="text-muted">Rain</small>
+            </div>
+            
+          </div>
+        </div>
 
-// Auto-populate schedule name based on zone selection
-document.getElementById('zone').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const nameField = document.getElementById('name');
-    
-    if (selectedOption.value && !nameField.value) {
-        const zoneName = selectedOption.text.split(' (')[0];
-        const time = document.getElementById('start_time').value || '06:00';
-        nameField.value = `${zoneName} - ${time} Schedule`;
-    }
-});
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
+// Set default start time based on morning/evening selection
+function updateStartTime() {
+    const isMorning = document.getElementById('morning').checked;
+    document.getElementById('start_time').value = isMorning ? '06:00' : '18:00';
+}
 
-document.getElementById('start_time').addEventListener('change', function() {
-    const zoneField = document.getElementById('zone');
-    const nameField = document.getElementById('name');
+document.getElementById('morning').addEventListener('change', updateStartTime);
+document.getElementById('evening').addEventListener('change', updateStartTime);
+updateStartTime(); // Initialize on page load
+
+// Simulate weather data loading
+function fetchWeatherData() {
+    // Show loading state
+    document.getElementById('weather-progress').style.width = '30%';
+    document.getElementById('weather-desc').textContent = 'Fetching weather data...';
     
-    if (zoneField.value && !nameField.value) {
-        const zoneName = zoneField.options[zoneField.selectedIndex].text.split(' (')[0];
-        nameField.value = `${zoneName} - ${this.value} Schedule`;
-    }
-});
+    // Simulate API call with timeout
+    setTimeout(() => {
+        // Mock data - replace with actual API call (e.g., using fetch API to your backend)
+        const mockData = {
+            temperature: 24.5,
+            humidity: 68,
+            rainfall: 0.5, // Simulate a small amount of recent rain
+            wind_speed: 15,
+            condition: "Partly Cloudy" // Example condition
+        };
+        
+        // Update UI with weather data
+        document.getElementById('weather-temp').textContent = `${mockData.temperature.toFixed(1)}°C`;
+        document.getElementById('weather-humidity').textContent = `${mockData.humidity}%`;
+        document.getElementById('weather-rain').textContent = `${mockData.rainfall.toFixed(1)} mm`;
+        document.getElementById('weather-wind').textContent = `${mockData.wind_speed.toFixed(0)} km/h`;
+        document.getElementById('weather-desc').textContent = mockData.condition;
+        document.getElementById('weather-progress').style.width = '100%';
+        
+        // Set appropriate weather icon based on condition and data
+        const weatherIconElement = document.getElementById('weather-icon');
+        let iconClass = 'bi bi-cloud-sun'; // Default
+
+        if (mockData.rainfall > 0.1) { // If there's notable rain
+            iconClass = 'bi bi-cloud-rain-heavy';
+        } else if (mockData.condition.toLowerCase().includes('clear') || mockData.condition.toLowerCase().includes('sun')) {
+            iconClass = 'bi bi-sun';
+        } else if (mockData.condition.toLowerCase().includes('cloud') && !mockData.condition.toLowerCase().includes('partly')) {
+            iconClass = 'bi bi-cloud';
+        } else if (mockData.condition.toLowerCase().includes('storm')) {
+            iconClass = 'bi bi-cloud-lightning-rain';
+        } else if (mockData.condition.toLowerCase().includes('wind')) {
+            iconClass = 'bi bi-wind'; // More specific if wind is dominant
+        }
+        weatherIconElement.innerHTML = `<i class="${iconClass}"></i>`;
+        
+        // Hide progress bar after animation
+        setTimeout(() => {
+            document.getElementById('weather-progress').style.width = '0%'; // Reset for next fetch
+        }, 1000); // Allow time for the 100% width animation to complete
+        
+    }, 1500); // Simulate network delay
+}
+
+// Initialize weather data fetch on page load
+fetchWeatherData();
 </script>
 {% endblock %}

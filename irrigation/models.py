@@ -1,81 +1,110 @@
-# irrigation/models.py
 from django.db import models
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.utils import timezone
 
-class IrrigationZone(models.Model):
+class Field(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    area_sqm = models.DecimalField(max_digits=10, decimal_places=2)
-    soil_type = models.CharField(max_length=50, choices=[
-        ('clay', 'Clay'),
-        ('loam', 'Loam'),
-        ('sand', 'Sandy'),
-        ('silt', 'Silt'),
-    ])
-    plant_type = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
+    location = models.CharField(max_length=100)
+    area = models.FloatField(help_text="Area in hectares")
+    crop_type = models.CharField(max_length=100)
+
     def __str__(self):
         return self.name
+
+class Sensor(models.Model):
+    SENSOR_TYPES = [
+        ('soil_moisture', 'Soil Moisture'),
+        ('temperature', 'Temperature'),
+        ('humidity', 'Humidity'),
+    ]
+
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='sensors')
+    sensor_type = models.CharField(max_length=20, choices=SENSOR_TYPES)
+    installation_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.get_sensor_type_display()} - {self.field.name}"
+
+class SensorReading(models.Model):
+    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE)
+    value = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.sensor}: {self.value} at {self.timestamp}"
+
+class WeatherData(models.Model):
+    field = models.ForeignKey(Field, on_delete=models.CASCADE)
+    temperature = models.FloatField()
+    humidity = models.FloatField()
+    rainfall = models.FloatField(help_text="Rainfall in mm")
+    wind_speed = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"Weather at {self.field.name} - {self.timestamp}"
+
+class IrrigationZone(models.Model):
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='zones')
+    name = models.CharField(max_length=100)
+    area = models.FloatField(help_text="Area in square meters")
+    crop_type = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name} ({self.field.name})"
 
 class IrrigationSchedule(models.Model):
     FREQUENCY_CHOICES = [
         ('daily', 'Daily'),
-        ('every_other_day', 'Every Other Day'),
-        ('twice_weekly', 'Twice Weekly'),
         ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
         ('custom', 'Custom'),
     ]
-    
-    STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('paused', 'Paused'),
-        ('completed', 'Completed'),
-    ]
-    
-    zone = models.ForeignKey(IrrigationZone, on_delete=models.CASCADE)
+
+    field = models.ForeignKey(Field, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    start_time = models.TimeField()
-    duration_minutes = models.PositiveIntegerField()
+    duration_minutes = models.PositiveIntegerField(help_text="Duration in minutes")
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    start_time = models.TimeField()
     auto_weather_adjust = models.BooleanField(default=False)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
+    is_active = models.BooleanField(default=True)
+    last_run = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
-        return f"{self.name} - {self.zone.name}"
+        return f"{self.name} ({self.field.name}) - {self.get_frequency_display()}"
 
 class IrrigationLog(models.Model):
-    schedule = models.ForeignKey(IrrigationSchedule, on_delete=models.CASCADE, null=True, blank=True)
-    zone = models.ForeignKey(IrrigationZone, on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True, blank=True)
-    duration_actual = models.PositiveIntegerField(null=True, blank=True)
-    water_volume_liters = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    weather_condition = models.CharField(max_length=50, blank=True)
-    soil_moisture_before = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    soil_moisture_after = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    notes = models.TextField(blank=True)
-    
-    def __str__(self):
-        return f"{self.zone.name} - {self.start_time.strftime('%Y-%m-%d %H:%M')}"
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('running', 'Running'),
+        ('completed', 'Completed'),
+        ('skipped', 'Skipped'),
+        ('failed', 'Failed'),
+    ]
+    FREQUENCY_CHOICES = [
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('custom', 'Custom'),
+    ]
 
-class WeatherData(models.Model):
-    date = models.DateField()
-    temperature_max = models.DecimalField(max_digits=5, decimal_places=2)
-    temperature_min = models.DecimalField(max_digits=5, decimal_places=2)
-    humidity = models.DecimalField(max_digits=5, decimal_places=2)
-    precipitation = models.DecimalField(max_digits=5, decimal_places=2)
-    wind_speed = models.DecimalField(max_digits=5, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
+
+    name = models.ForeignKey(Field, on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    start_time_time = models.DateTimeField(null=True, blank=True)
+    duration_minutes = models.PositiveIntegerField(help_text="Actual duration in minutes", null=True, blank=True)
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
+    auto_weather_adjust = models.BooleanField(default=False)
+    is_active = models.BooleanField(blank=True)
+
     class Meta:
-        unique_together = ['date']
-    
+        ordering = ['-start_time']
+
     def __str__(self):
-        return f"Weather {self.date}"
+        return f"Irrigation at {self.field.name} - {self.status}"
+

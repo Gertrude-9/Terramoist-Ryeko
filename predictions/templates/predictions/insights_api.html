@@ -1,0 +1,197 @@
+{% extends "predictions/base.html" %}
+
+{% block title %}Field Insights{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Field Insights: {{ field.name }}</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form method="get" class="form-inline">
+                <div class="form-group mr-3">
+                    <label for="days" class="mr-2">Last</label>
+                    <select class="form-control" id="days" name="days">
+                        <option value="7" {% if days == 7 %}selected{% endif %}>7 days</option>
+                        <option value="14" {% if days == 14 %}selected{% endif %}>14 days</option>
+                        <option value="30" {% if days == 30 %}selected{% endif %}>30 days</option>
+                    </select>
+                </div>
+                <div class="form-group mr-3">
+                    <label for="insight_type" class="mr-2">View</label>
+                    <select class="form-control" id="insight_type" name="insight_type">
+                        <option value="all" {% if insight_type == 'all' %}selected{% endif %}>All Data</option>
+                        <option value="soil_moisture" {% if insight_type == 'soil_moisture' %}selected{% endif %}>Soil Moisture</option>
+                        <option value="temperature" {% if insight_type == 'temperature' %}selected{% endif %}>Temperature</option>
+                        <option value="humidity" {% if insight_type == 'humidity' %}selected{% endif %}>Humidity</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+    </div>
+
+    {% if insight_type == 'all' or insight_type == 'soil_moisture' %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Soil Moisture Trends</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="moistureChart" height="200"></canvas>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in insights.soil_moisture %}
+                    <tr>
+                        <td>{{ data.timestamp|date:"M d, H:i" }}</td>
+                        <td>{{ data.value }}%</td>
+                        <td>
+                            <span class="badge badge-{% if data.status == 'critical' %}danger{% elif data.status == 'low' %}warning{% else %}success{% endif %}">
+                                {{ data.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if insight_type == 'all' or insight_type == 'temperature' %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Temperature Trends</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="temperatureChart" height="200"></canvas>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in insights.temperature %}
+                    <tr>
+                        <td>{{ data.timestamp|date:"M d, H:i" }}</td>
+                        <td>{{ data.value }}°C</td>
+                        <td>
+                            <span class="badge badge-{% if data.status == 'high' %}danger{% elif data.status == 'low' %}warning{% else %}success{% endif %}">
+                                {{ data.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if insight_type == 'all' or insight_type == 'humidity' %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Humidity Trends</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="humidityChart" height="200"></canvas>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in insights.humidity %}
+                    <tr>
+                        <td>{{ data.timestamp|date:"M d, H:i" }}</td>
+                        <td>{{ data.value }}%</td>
+                        <td>
+                            <span class="badge badge-{% if data.status == 'low' %}warning{% elif data.status == 'high' %}info{% else %}success{% endif %}">
+                                {{ data.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Irrigation Recommendations</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Recommendation</th>
+                        <th>Confidence</th>
+                        <th>Reasoning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in insights.predictions %}
+                    <tr>
+                        <td>{{ pred.timestamp|date:"M d, H:i" }}</td>
+                        <td>
+                            <span class="badge badge-{% if pred.recommendation == 'IRRIGATE' %}danger{% elif pred.recommendation == 'MONITOR' %}warning{% else %}success{% endif %}">
+                                {{ pred.recommendation|title }}
+                            </span>
+                        </td>
+                        <td>{{ pred.confidence|floatformat:2 }}</td>
+                        <td>{{ pred.reasoning }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Charts would be initialized here with the data from insights
+    // Example for moisture chart:
+    const moistureCtx = document.getElementById('moistureChart').getContext('2d');
+    const moistureChart = new Chart(moistureCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for data in insights.soil_moisture %}"{{ data.timestamp|date:'M d' }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Soil Moisture %',
+                data: [{% for data in insights.soil_moisture %}{{ data.value }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+
+    // Similar charts for temperature and humidity would be added
+</script>
+{% endblock %}
+{% endblock %}

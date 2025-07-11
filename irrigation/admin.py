@@ -1,26 +1,36 @@
-# admin.py
+# irrigation/admin.py
 from django.contrib import admin
-from .models import IrrigationZone, IrrigationSchedule, IrrigationLog, WeatherData
+from .models import Field, Sensor, SensorReading, WeatherData, IrrigationSchedule, IrrigationLog
 
-@admin.register(IrrigationZone)
-class IrrigationZoneAdmin(admin.ModelAdmin):
-    list_display = ['name', 'area_sqm', 'soil_type', 'plant_type', 'created_at']
-    list_filter = ['soil_type', 'plant_type']
-    search_fields = ['name', 'description']
+@admin.register(Field)
+class FieldAdmin(admin.ModelAdmin):
+    list_display = ['name', 'location', 'area', 'crop_type']
+    search_fields = ['name', 'location']
 
-@admin.register(IrrigationSchedule)
-class IrrigationScheduleAdmin(admin.ModelAdmin):
-    list_display = ['name', 'zone', 'start_time', 'duration_minutes', 'frequency', 'status']
-    list_filter = ['status', 'frequency', 'auto_weather_adjust']
-    search_fields = ['name', 'zone__name']
+@admin.register(Sensor)
+class SensorAdmin(admin.ModelAdmin):
+    list_display = ['field', 'sensor_type', 'installation_date', 'is_active']
+    list_filter = ['sensor_type', 'is_active']
 
-@admin.register(IrrigationLog)
-class IrrigationLogAdmin(admin.ModelAdmin):
-    list_display = ['zone', 'start_time', 'duration_actual', 'water_volume_liters']
-    list_filter = ['start_time', 'zone']
-    readonly_fields = ['start_time']
+@admin.register(SensorReading)
+class SensorReadingAdmin(admin.ModelAdmin):
+    list_display = ['sensor', 'value', 'timestamp']
+    list_filter = ['sensor__sensor_type']
+    date_hierarchy = 'timestamp'
 
 @admin.register(WeatherData)
 class WeatherDataAdmin(admin.ModelAdmin):
-    list_display = ['date', 'temperature_max', 'temperature_min', 'precipitation']
-    list_filter = ['date']
+    list_display = ['field', 'temperature', 'humidity', 'rainfall', 'timestamp']
+    date_hierarchy = 'timestamp'
+
+@admin.register(IrrigationSchedule)
+class IrrigationScheduleAdmin(admin.ModelAdmin):
+    list_display = ['field', 'start_time', 'duration_minutes', 'frequency', 'is_active', 'auto_weather_adjust']
+    list_filter = ['frequency', 'is_active']
+
+@admin.register(IrrigationLog)
+class IrrigationLogAdmin(admin.ModelAdmin):
+    list_display = ['name', 'start_time', 'frequency', 'duration_minutes', 'is_active', 'auto_weather_adjust']
+    list_filter = ['is_active']
+    date_hierarchy = 'start_time'
+    search_fields = ['field__name', 'reason']

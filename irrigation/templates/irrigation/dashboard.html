@@ -3,1063 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Irrigation Dashboard - Smart Water Management</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Terramoist Irrigation Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #2563eb;
+            --success: #059669;
+            --info: #0891b2;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f8fafc;
-            color: #334155;
-            line-height: 1.6;
+            background-color: var(--gray-50);
+            color: var(--gray-800);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        /* Enhanced Header */
-        .page-header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-            background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .page-subtitle {
-            font-size: 1rem;
-            opacity: 0.8;
-            font-weight: 400;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        /* Enhanced Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.25rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            font-size: 0.875rem;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-primary:hover {
+        .hover-shadow:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s ease-in-out;
         }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-        }
-
-        /* Grid System */
-        .grid {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .grid-2 {
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        }
-
-        .grid-3 {
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        }
-
-        /* Enhanced Cards */
         .card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
         }
 
         .card-header {
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-bottom: 1px solid #e2e8f0;
-            font-weight: 600;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background-color: white;
+            border-bottom: 1px solid var(--gray-200);
         }
 
-        .card-body {
-            padding: 1.5rem;
-        }
+        .bg-success-subtle { background-color: rgba(5, 150, 105, 0.1) !important; }
+        .bg-info-subtle { background-color: rgba(8, 145, 178, 0.1) !important; }
+        .bg-primary-subtle { background-color: rgba(37, 99, 235, 0.1) !important; }
+        
+        .text-success { color: var(--success) !important; }
+        .text-info { color: var(--info) !important; }
+        .text-primary { color: var(--primary) !important; }
 
-        /* Status Badge */
         .badge {
-            padding: 0.375rem 0.75rem;
-            border-radius: 9999px;
             font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
         }
 
-        .badge.bg-info {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-            color: white;
+        .badge.bg-success-subtle { 
+            background-color: rgba(5, 150, 105, 0.1) !important; 
+            color: var(--success) !important; 
         }
 
-        /* Enhanced Metrics */
-        .metric-card {
-            text-align: center;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+        .btn-outline-secondary {
+            border-color: var(--gray-300);
+            color: var(--gray-600);
         }
 
-        .metric-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .btn-outline-secondary:hover {
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
+            color: var(--gray-700);
         }
 
-        .metric-card:hover::before {
-            opacity: 1;
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
         }
 
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 0.25rem;
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .metric-label {
-            font-size: 0.875rem;
-            color: #64748b;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .metric-trend {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-weight: 500;
-        }
-
-        .trend-up {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
-        .trend-down {
-            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        /* Enhanced Schedule Items */
-        .schedule-section {
-            margin-top: 1.5rem;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            color: #1e293b;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e2e8f0;
+        .app-title {
             font-weight: 600;
-            position: relative;
+            color: var(--success);
         }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 60px;
-            height: 2px;
-            background: linear-gradient(90deg, #3b82f6, #06b6d4);
-        }
-
-        .schedule-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 0.75rem;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .schedule-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, #3b82f6, #06b6d4);
-            transform: scaleY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .schedule-item:hover::before {
-            transform: scaleY(1);
-        }
-
-        .schedule-item:hover {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            transform: translateX(4px);
-        }
-
-        /* Weather Card Enhancement */
-        .weather-card {
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .weather-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100px;
-            height: 100px;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/><circle cx="50" cy="50" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></svg>');
-            opacity: 0.3;
-        }
-
-        .weather-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .weather-icon {
-            font-size: 2.5rem;
-            opacity: 0.9;
-        }
-
-        .weather-metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .weather-metric {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .weather-metric .label {
-            font-size: 0.75rem;
-            opacity: 0.8;
-            margin-bottom: 0.25rem;
-        }
-
-        .weather-metric .value {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        /* Quick Actions Enhancement */
-        .quick-actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
-        }
-
-        .quick-action-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1.25rem;
-            border-radius: 0.75rem;
-            text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid transparent;
-        }
-
-        .quick-action-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .quick-action-btn:hover::before {
-            opacity: 1;
-        }
-
-        .quick-action-btn i {
-            font-size: 1.75rem;
-            margin-bottom: 0.75rem;
-            transition: transform 0.3s ease;
-        }
-
-        .quick-action-btn:hover i {
-            transform: scale(1.1);
-        }
-
-        .quick-action-btn span {
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .quick-action-btn.primary {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.1) 100%);
-            color: #1d4ed8;
-            border-color: rgba(59, 130, 246, 0.2);
-        }
-
-        .quick-action-btn.primary:hover {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(29, 78, 216, 0.15) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-        }
-
-        /* System Status Enhancement */
-        .status-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 0.5rem;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
-        }
-
-        .status-item:hover {
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 1rem;
-            position: relative;
-        }
-
-        .status-indicator.active {
-            background: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-        }
-
-        .status-indicator.active::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 6px;
-            height: 6px;
-            background: white;
-            border-radius: 50%;
-        }
-
-        /* Empty State Enhancement */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 1rem;
-            border: 2px dashed #cbd5e1;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: #94a3b8;
-            margin-bottom: 1rem;
-            opacity: 0.7;
-        }
-
-        .empty-state h3 {
-            margin-bottom: 0.5rem;
-            color: #475569;
-            font-weight: 600;
-        }
-
-        .empty-state p {
-            color: #64748b;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-        }
-         /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            padding: 20px 0;
-            position: fixed;
-            height: 100vh;
-            z-index: 1000;
-        }
-
-        .sidebar-brand {
-            padding: 0 20px 20px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            font-weight: 600;
-            font-size: 1.3rem;
-            color: var(--primary-green);
-            border-bottom: 1px solid #eee;
-        }
-
-        .sidebar-brand i {
-            margin-right: 10px;
-            font-size: 1.8rem;
-        }
-
-        .nav-item {
-            margin: 5px 15px;
-        }
-
-        .nav-link {
-            color: #555;
-            border-radius: 8px;
-            padding: 12px 15px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background-color: var(--light-green);
-            color: var(--primary-green);
-        }
-
-        .nav-link i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-
-
-        @media (max-width: 640px) {
-            .container {
-                padding: 0 1rem;
-            }
-            
-            .page-header {
-                padding: 1.5rem 0;
-            }
-            
-            .page-title {
-                font-size: 1.5rem;
-            }
-            
-            .card-body, .card-header {
-                padding: 1rem;
-            }
-            
-            .grid-3 {
-                grid-template-columns: 1fr;
-            }
-            
-            .quick-actions-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        /* Animation Classes */
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .slide-in {
-            animation: slideIn 0.8s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* Efficiency stats */
-.efficiency-stats {
-    display: flex;
-    justify-content: space-around;
-    text-align: center;
-    flex-wrap: wrap;
-    gap: 16px;
-    padding: 16px 0;
-}
-
-.efficiency-stat {
-    flex: 1;
-    min-width: 120px;
-}
-
-.efficiency-stat i {
-    font-size: 2rem;
-    color: #4CAF50;  /* fresh leaf green */
-    margin-bottom: 8px;
-}
-
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-/* Recent activity */
-.recent-activity {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    background: rgba(250,250,250,0.9);
-    padding: 10px 14px;
-    border-radius: 12px;
-    transition: background 0.2s ease;
-}
-
-.activity-item:hover {
-    background: rgba(240,240,240,0.9);
-}
-
-.activity-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    font-size: 1.2rem;
-    color: #fff;
-}
-
-.activity-icon.success {
-    background: #4CAF50;
-}
-
-.activity-icon.info {
-    background: #2196F3;
-}
-
-.activity-icon.warning {
-    background: #FF9800;
-}
-
-.activity-content {
-    flex: 1;
-}
-
-.activity-time {
-    font-size: 0.8rem;
-    color: #999;
-}
-
-/* Slide-in animation */
-@keyframes slide-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.slide-in {
-    animation: slide-in 0.6s ease;
-}
     </style>
 </head>
 <body>
-    
-    <!-- Sidebar Navigation -->
-    <div class="sidebar d-flex flex-column">
-        <div class="sidebar-brand">
-           <i class="fas fa-cloud-rain"></i>
-            <span>Irrigation</span>
-        </div>
-
-        <ul class="nav flex-column flex-grow-1">
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'irrigation:create_schedule' %}">
-                    <span>Add Schedule</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'irrigation:auto_schedule' %}">
-                    <span>Smart Schedule</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'irrigation:historical_data' %}">
-                    <span>System Check</span>
-                </a>
-            </li>
-    
-        </ul>
-
-    </div>
-
-    <div class="container">
-        <div class="grid grid-2">
-            <!-- Today's Overview Card -->
-            <div class="card fade-in">
-                <div class="card-header">
-                    <span>Today's Overview</span>
-                    <span class="badge bg-info">
-                        <i class="fas fa-calendar-day"></i>
-                        Monday, June 29
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="grid grid-3">
-                        <div class="metric-card">
-                            <div class="metric-value">2,347 L</div>
-                            <div class="metric-label">Water Used</div>
-                            <div class="metric-trend trend-down">
-                                <i class="fas fa-arrow-down"></i>
-                                12% from avg
-                            </div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value">3</div>
-                            <div class="metric-label">Active Zones</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value">5</div>
-                            <div class="metric-label">Upcoming</div>
-                        </div>
-                    </div>
-
-                    <div class="schedule-section">
-                        <h3 class="section-title">Today's Schedule</h3>
-                        <div class="schedule-item slide-in">
-                            <div style="display: flex; flex-direction: column; align-items: center; min-width: 60px; margin-right: 1rem;">
-                                <span style="font-weight: bold; font-size: 1rem;">06:00</span>
-                                <span style="font-size: 0.75rem; color: #64748b;">15 min</span>
-                            </div>
-                            <div style="flex-grow: 1;">
-                                <div style="font-weight: bold; margin-bottom: 0.25rem;">Front Lawn</div>
-                                <div style="font-size: 0.875rem; color: #64748b;">Morning watering cycle</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span class="badge" style="background: #dcfce7; color: #166534;">Completed</span>
-                            </div>
-                        </div>
-                        <div class="schedule-item slide-in">
-                            <div style="display: flex; flex-direction: column; align-items: center; min-width: 60px; margin-right: 1rem;">
-                                <span style="font-weight: bold; font-size: 1rem;">18:30</span>
-                                <span style="font-size: 0.75rem; color: #64748b;">20 min</span>
-                            </div>
-                            <div style="flex-grow: 1;">
-                                <div style="font-weight: bold; margin-bottom: 0.25rem;">Garden Beds</div>
-                                <div style="font-size: 0.875rem; color: #64748b;">Evening deep watering</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span class="badge" style="background: #fff3cd; color: #856404;">Pending</span>
-                                <button class="btn" style="background: transparent; border: 1px solid #dee2e6; border-radius: 50%; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-play" style="font-size: 0.75rem;"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="container-fluid px-4 py-3">
+        <!-- Header with Terramoist branding -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0 fw-semibold">
+                    <i class="bi bi-droplet-half me-2 text-info"></i> 
+                    <span class="app-title">Terramoist</span> Irrigation Dashboard
+                </h1>
+                <p class="text-muted small mb-0">Smart field management system</p>
             </div>
-
-            <!-- Weather and Quick Actions Card -->
-            <div class="card fade-in">
-                <div class="card-header">Weather & Actions</div>
-                <div class="card-body">
-                    <div class="weather-card">
-                        <div class="weather-header">
-                            <div>
-                                <h3 style="margin-bottom: 0.25rem;">Current Conditions</h3>
-                                <p style="opacity: 0.9;">Partly Cloudy</p>
-                            </div>
-                            <div class="weather-icon">
-                                <i class="fas fa-cloud-sun"></i>
-                            </div>
-                        </div>
-                        <div class="weather-metrics">
-                            <div class="weather-metric">
-                                <span class="label">Temperature</span>
-                                <span class="value">24°C</span>
-                                <span style="font-size: 0.75rem; opacity: 0.8;">(H:28° L:18°)</span>
-                            </div>
-                            <div class="weather-metric">
-                                <span class="label">Humidity</span>
-                                <span class="value">65%</span>
-                            </div>
-                            <div class="weather-metric">
-                                <span class="label">Precipitation</span>
-                                <span class="value">0mm</span>
-                            </div>
-                            <div class="weather-metric">
-                                <span class="label">ET Rate</span>
-                                <span class="value">4.2mm</span>
-                            </div>
-                        </div>
-                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border-radius: 0.5rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-lightbulb"></i>
-                            <span>Recommendation: Normal watering schedule</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="section-title">Quick Actions</h3>
-                        <div class="quick-actions-grid">
-                            <a href="#" class="quick-action-btn primary">
-                                <i class="fas fa-tint"></i>
-                                <span>Water Now</span>
-                            </a>
-                            <a href="#" class="quick-action-btn" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%); color: #059669; border-color: rgba(16, 185, 129, 0.2);">
-                                <i class="fas fa-magic"></i>
-                                <span>Smart Schedule</span>
-                            </a>
-                            <a href="#" class="quick-action-btn" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%); color: #d97706; border-color: rgba(245, 158, 11, 0.2);">
-                                <i class="fas fa-check-circle"></i>
-                                <span>System Check</span>
-                            </a>
-                            <a href="#" class="quick-action-btn" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(2, 132, 199, 0.1) 100%); color: #0284c7; border-color: rgba(14, 165, 233, 0.2);">
-                                <i class="fas fa-chart-bar"></i>
-                                <span>Reports</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary rounded-pill">
+                    <i class="bi bi-calendar-plus me-1"></i> Add Schedule
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill">
+                    <i class="bi bi-plus-circle me-1"></i> Add Field
+                </button>
             </div>
         </div>
 
-         <!-- System Status and Recent Activity -->
-        <div class="grid grid-2" style="margin-top: 1.5rem;">
-            <!-- System Status Card -->
-            <div class="card slide-in">
-                <div class="card-header">System Status</div>
-                <div class="card-body">
-                    <div style="margin-bottom: 1.5rem;">
-                        <div class="status-item">
-                            <div class="status-indicator active"></div>
-                            <div>
-                                <span style="font-weight: 500; display: block;">Controller</span>
-                                <span style="font-size: 0.875rem; color: #64748b;">Connected - v2.4.1</span>
-                            </div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-indicator active"></div>
-                            <div>
-                                <span style="font-weight: 500; display: block;">Water Flow</span>
-                                <span style="font-size: 0.875rem; color: #64748b;">Normal (15.2 L/min)</span>
-                            </div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-indicator active"></div>
-                            <div>
-                                <span style="font-weight: 500; display: block;">Water Pressure</span>
-                                <span style="font-size: 0.875rem; color: #64748b;">45 psi</span>
-                            </div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-indicator active"></div>
-                            <div>
-                                <span style="font-weight: 500; display: block;">Weather Station</span>
-                                <span style="font-size: 0.875rem; color: #64748b;">Connected</span>
-                            </div>
+        <div class="row g-4">
+            <!-- Current Conditions -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-semibold"><i class="bi bi-thermometer-half text-primary me-2"></i> Current Conditions</h6>
+                            <span class="badge bg-primary-subtle text-primary small">Live Data</span>
                         </div>
                     </div>
-                    
-                    <div class="efficiency-stats">
-                        <div class="efficiency-stat">
-                            <i class="fas fa-leaf"></i>
-                            <div class="stat-value">92%</div>
-                            <div class="stat-label">Efficiency</div>
-                        </div>
-                        <div class="efficiency-stat">
-                            <i class="fas fa-tint"></i>
-                            <div class="stat-value">847L</div>
-                            <div class="stat-label">Saved Today</div>
-                        </div>
-                        <div class="efficiency-stat">
-                            <i class="fas fa-seedling"></i>
-                            <div class="stat-value">15</div>
-                            <div class="stat-label">Zones Active</div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-center p-3 rounded hover-shadow">
+                                    <div class="bg-primary-subtle p-3 rounded-circle d-inline-flex mb-2">
+                                        <i class="bi bi-droplet text-primary fs-4"></i>
+                                    </div>
+                                    <h5 class="fw-bold">65%</h5>
+                                    <div class="small text-muted">Soil Moisture</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-3 rounded hover-shadow">
+                                    <div class="bg-primary-subtle p-3 rounded-circle d-inline-flex mb-2">
+                                        <i class="bi bi-thermometer text-primary fs-4"></i>
+                                    </div>
+                                    <h5 class="fw-bold">28°C</h5>
+                                    <div class="small text-muted">Temperature</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-3 rounded hover-shadow">
+                                    <div class="bg-primary-subtle p-3 rounded-circle d-inline-flex mb-2">
+                                        <i class="bi bi-cloud text-primary fs-4"></i>
+                                    </div>
+                                    <h5 class="fw-bold">72%</h5>
+                                    <div class="small text-muted">Humidity</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-3 rounded hover-shadow">
+                                    <div class="bg-primary-subtle p-3 rounded-circle d-inline-flex mb-2">
+                                        <i class="bi bi-brightness-high text-primary fs-4"></i>
+                                    </div>
+                                    <h5 class="fw-bold">850 W/m²</h5>
+                                    <div class="small text-muted">Solar Radiation</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent Activity Card -->
-            <div class="card slide-in">
-                <div class="card-header">Recent Activity</div>
-                <div class="card-body">
-                    <div class="recent-activity">
-                        <div class="activity-item">
-                            <div class="activity-icon success">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <div class="activity-content">
-                                <div style="font-weight: 500;">Front Lawn watering completed</div>
-                                <div class="activity-time">2 hours ago</div>
-                            </div>
+            <!-- Fields List -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-semibold"><i class="bi bi-map text-success me-2"></i> My Fields</h6>
+                            <span class="badge bg-success-subtle text-success">{{ fields.count }} fields</span>
                         </div>
-                        <div class="activity-item">
-                            <div class="activity-icon info">
-                                <i class="fas fa-cloud-rain"></i>
+                    </div>
+                    <div class="card-body">
+                        {% if fields %}
+                        <div class="row g-3">
+                            {% for field in fields %}
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100 hover-shadow">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start mb-2">
+                                            <div class="bg-success-subtle p-2 rounded me-2">
+                                                <i class="bi bi-map text-success"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-semibold mb-0">{{ field.name }}</h5>
+                                                <span class="badge bg-success-subtle text-success small">{{ field.crop_type }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between small text-muted mb-3">
+                                            <span>{{ field.area }} ha</span>
+                                            <span>Zone {{ field.zone }}</span>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'fields:field_detail' field.pk %}" class="btn btn-sm btn-outline-secondary flex-grow-1">
+                                                <i class="bi bi-info-circle me-1"></i> Details
+                                            </a>
+                                            <a href="{% url 'irrigation:create_schedule' field.pk %}" class="btn btn-sm btn-primary flex-grow-1">
+                                                <i class="bi bi-droplet me-1"></i> Irrigate
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="activity-content">
-                                <div style="font-weight: 500;">Weather update received</div>
-                                <div class="activity-time">3 hours ago</div>
-                            </div>
+                            {% endfor %}
                         </div>
-                        <div class="activity-item">
-                            <div class="activity-icon warning">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                            <div class="activity-content">
-                                <div style="font-weight: 500;">Low water pressure detected</div>
-                                <div class="activity-time">5 hours ago</div>
-                            </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-map text-muted fs-1"></i>
+                            <h5 class="mt-3 text-muted">No fields registered yet</h5>
+                            <p class="text-muted">Add your first field to get started</p>
+                            <button class="btn btn-primary mt-2">
+                                <i class="bi bi-plus-circle me-1"></i> Add Field
+                            </button>
                         </div>
-                        <div class="activity-item">
-                            <div class="activity-icon success">
-                                <i class="fas fa-calendar-plus"></i>
-                            </div>
-                            <div class="activity-content">
-                                <div style="font-weight: 500;">New schedule created for Garden Beds</div>
-                                <div class="activity-time">1 day ago</div>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon info">
-                                <i class="fas fa-cog"></i>
-                            </div>
-                            <div class="activity-content">
-                                <div style="font-weight: 500;">System maintenance completed</div>
-                                <div class="activity-time">2 days ago</div>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Refresh dashboard functionality
-        document.getElementById('refresh-dashboard').addEventListener('click', function() {
-            const icon = this.querySelector('i');
-            icon.style.animation = 'spin 1s linear';
-            
-            setTimeout(() => {
-                icon.style.animation = '';
-                // Here you would typically fetch new data from your API
-                console.log('Dashboard refreshed');
-            }, 1000);
-        });
-
-        // Add spin animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Simulate real-time updates
-        function updateMetrics() {
-            const waterUsed = document.querySelector('.metric-value');
-            if (waterUsed) {
-                const currentValue = parseInt(waterUsed.textContent.replace(/[^\d]/g, ''));
-                const newValue = currentValue + Math.floor(Math.random() * 10);
-                waterUsed.textContent = newValue.toLocaleString() + ' L';
-            }
-        }
-
-        // Update metrics every 30 seconds
-        setInterval(updateMetrics, 30000);
-
-        // Add click handlers for quick actions
-        document.querySelectorAll('.quick-action-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const action = this.querySelector('span').textContent;
-                console.log(`Action clicked: ${action}`);
-                
-                // Add visual feedback
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 150);
-            });
-        });
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

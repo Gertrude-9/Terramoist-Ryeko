@@ -44,47 +44,51 @@
             flex-direction: column;
         }
 
-        /* Modern Navigation */
-        .navbar {
-            background: linear-gradient(135deg, var(--primary-green), var(--success-green)) !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 1rem 0;
-            border-bottom: 3px solid var(--accent-green);
-        }
+       /* Modern Navigation */
+.navbar {
+    background: white !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+    border-bottom: 3px solid var(--accent-green);
+}
 
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: white !important;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+.navbar-brand {
+    font-weight: normal; /* remove bold */
+    font-size: 1.5rem;
+    color: black !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-        .navbar-brand:hover {
-            color: rgba(255, 255, 255, 0.9) !important;
-            transform: translateY(-1px);
-            transition: all 0.3s ease;
-        }
+.navbar-brand i {
+    color: black !important; /* make icon black */
+}
 
-        .navbar-nav .nav-link {
-            color: rgba(255, 255, 255, 0.9) !important;
-            font-weight: 500;
-            padding: 0.5rem 1rem !important;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-        }
+.navbar-brand:hover {
+    color: rgba(0, 0, 0, 0.8) !important;
+    transform: translateY(-1px);
+    transition: all 0.3s ease;
+}
 
-        .navbar-nav .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white !important;
-            transform: translateY(-1px);
-        }
+.navbar-nav .nav-link {
+    color: black !important;
+    font-weight: normal; /* remove bold */
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
 
-        .navbar-nav .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white !important;
-        }
+.navbar-nav .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: black !important;
+    transform: translateY(-1px);
+}
+
+.navbar-nav .nav-link.active {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: black !important;
+}
 
         /* Breadcrumb Styling */
         .breadcrumb-container {

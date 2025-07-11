@@ -22,111 +22,171 @@
         </div>
     </div>
 
-    <div class="page-header mb-4">
+    {% comment %} <div class="page-header mb-4">
         <h2 class="mb-0 text-success">
             <i class="fas fa-broadcast-tower text-success me-2"></i>Sensor Management
         </h2>
-    </div>
+    </div> {% endcomment %}
 
     <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-gradient-success">
-            <h5 class="mb-0 text-white">
-                <i class="fas fa-filter me-2"></i>Filter Sensors
-            </h5>
-        </div>
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-6">
-                    <label for="farm-filter" class="form-label fw-bold">Farm</label>
-                    <select id="farm-filter" name="farm" class="form-select form-select-success" onchange="this.form.submit()">
-                        <option value="">All Farms</option>
-                        {% for farm in farms %}
-                        <option value="{{ farm.id }}" {% if request.GET.farm == farm.id|stringformat:"s" %}selected{% endif %}>
-                            {{ farm.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label for="field-filter" class="form-label fw-bold">Field</label>
-                    <select id="field-filter" name="field" class="form-select form-select-success" onchange="this.form.submit()">
-                        <option value="">All Fields</option>
-                        {% for field in fields %}
-                        <option value="{{ field.id }}" {% if request.GET.field == field.id|stringformat:"s" %}selected{% endif %}>
-                            {{ field.name }} ({{ field.farm.name }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </form>
-        </div>
+    <div class="card-header bg-gradient-success">
+        <h5 class="mb-0 text-white">
+            <i class="fas fa-filter me-2"></i>Filter Sensors
+        </h5>
     </div>
-
-    {% if sensors %}
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for sensor in sensors %}
-        <div class="col">
-            <div class="card h-100 shadow-sm sensor-card">
-                <div class="card-header d-flex justify-content-between align-items-center bg-light">
-                    <h5 class="mb-0 text-success fw-bold">{{ sensor.name|default:sensor.sensor_type.name }}</h5>
-                    <span class="status-badge status-{% if sensor.is_active %}active{% else %}inactive{% endif %}">
-                        {% if sensor.is_active %}
-                            <i class="fas fa-circle me-1"></i>Active
-                        {% else %}
-                            <i class="fas fa-circle me-1"></i>Inactive
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-3 fw-bold">Sensor Details</h6>
-                        <ul class="list-unstyled">
-                            <li class="mb-2 d-flex align-items-center">
-                                <i class="fas fa-tag text-success me-2"></i>
-                                <strong>Type:</strong> 
-                                <span class="ms-2">{{ sensor.get_sensor_type_display }}</span>
-                            </li>
-                            <li class="mb-2 d-flex align-items-center">
-                                <i class="fas fa-map-marked-alt text-success me-2"></i>
-                                <strong>Field:</strong> 
-                                <span class="ms-2">{{ sensor.field.name }}</span>
-                            </li>
-                            <li class="mb-2 d-flex align-items-center">
-                                <i class="fas fa-tractor text-success me-2"></i>
-                                <strong>Farm:</strong> 
-                                <span class="ms-2">{{ sensor.field.farm.name }}</span>
-                            </li>
-                            <li class="d-flex align-items-center">
-                                <i class="fas fa-calendar-alt text-success me-2"></i>
-                                <strong>Installed:</strong> 
-                                <span class="ms-2">{{ sensor.installation_date|date:"M d, Y" }}</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="card-footer bg-white border-top-0">
-                    <div class="d-flex justify-content-between gap-2">
-                        <a href="{% url 'sensors:sensor_detail' sensor.pk %}" class="btn btn-success btn-sm flex-fill">
-                            <i class="fas fa-eye me-1"></i> Details
-                        </a>
-                        <a href="{% url 'sensors:sensor_update' sensor.pk %}" class="btn btn-outline-success btn-sm flex-fill">
-                            <i class="fas fa-edit me-1"></i> Edit
-                        </a>
-                    </div>
-                </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <!-- Sensor Type Filter -->
+            <div class="col-md-6">
+                <label for="type-filter" class="form-label fw-bold">Sensor Type</label>
+                <select id="type-filter" name="type" class="form-select form-select-success" onchange="this.form.submit()">
+                    <option value="">All Types</option>
+                    <option value="soil_moisture" {% if request.GET.type == "soil_moisture" %}selected{% endif %}>
+                        Soil Moisture
+                    </option>
+                    <option value="temperature" {% if request.GET.type == "temperature" %}selected{% endif %}>
+                        Temperature
+                    </option>
+                    <option value="humidity" {% if request.GET.type == "humidity" %}selected{% endif %}>
+                        Humidity
+                    </option>
+                    <option value="rainfall" {% if request.GET.type == "rainfall" %}selected{% endif %}>
+                        Rainfall
+                    </option>
+                    <option value="wind_speed" {% if request.GET.type == "wind_speed" %}selected{% endif %}>
+                        Wind Speed
+                    </option>
+                    <option value="solar_radiation" {% if request.GET.type == "solar_radiation" %}selected{% endif %}>
+                        Solar Radiation
+                    </option>
+                </select>
             </div>
-        </div>
-        {% endfor %}
+
+            <!-- Status Filter -->
+            <div class="col-md-6">
+                <label for="status-filter" class="form-label fw-bold">Status</label>
+                <select id="status-filter" name="status" class="form-select form-select-success" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="active" {% if request.GET.status == "active" %}selected{% endif %}>
+                        Active Only
+                    </option>
+                    <option value="inactive" {% if request.GET.status == "inactive" %}selected{% endif %}>
+                        Inactive Only
+                    </option>
+                </select>
+            </div>
+        </form>
     </div>
-    {% else %}
-    <div class="card shadow-sm">
-        <div class="card-body text-center py-5">
-            <i class="fas fa-seedling fa-4x text-success mb-4"></i>
-            <h3 class="mb-3 text-success">No Sensors Found</h3>
-            <p class="text-muted mb-4">You haven't added any sensors yet. Get started by creating your first sensor to monitor your farm's conditions.</p>
-            <a href="{% url 'sensors:sensor_create' %}" class="btn btn-success btn-lg px-4">
-                <i class="fas fa-plus me-2"></i>Create Sensor
+</div>
+    <div class="card shadow-sm mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Sensors</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if sensors %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="ps-4">Name</th>
+                        <th scope="col">Type</th>
+                        {% comment %} <th scope="col">Model</th> {% endcomment %}
+                        <th scope="col">Field</th>
+                        <th scope="col">Farm</th>
+                        <th scope="col">Installed</th>
+                        <th scope="col">Last Reading</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sensor in sensors %}
+                    <tr>
+                        <td class="ps-4 fw-semibold">
+                            <i class="fas fa-sensor me-2 text-{% if sensor.is_active %}success{% else %}secondary{% endif %}"></i>
+                            {{ sensor.name|default:sensor.sensor_type.name }}
+                        </td>
+                        <td>
+                            <span class="badge bg-info text-dark">
+                                {{ sensor.get_sensor_type_display }}
+                            </span>
+                        </td>
+                        {% comment %} <td>{{ sensor.model_number|default:"N/A" }}</td> {% endcomment %}
+                        <td>{{ sensor.field.name }}</td>
+                        <td>{{ sensor.field.farm.name }}</td>
+                        <td>{{ sensor.installation_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if sensor.last_reading %}
+                            {{ sensor.last_reading|date:"M d, H:i" }}
+                            {% else %}
+                            <span class="text-muted">No data</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if sensor.is_active %}success{% else %}secondary{% endif %} rounded-pill">
+                                {% if sensor.is_active %}
+                                <i class="fas fa-check-circle me-1"></i> Active
+                                {% else %}
+                                <i class="fas fa-times-circle me-1"></i> Inactive
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                type="button" 
+                id="sensorActionsDropdown-{{ sensor.pk }}" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+                title="Actions">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sensorActionsDropdown-{{ sensor.pk }}">
+            <li>
+                <a class="dropdown-item" href="{% url 'sensors:sensor_detail' sensor.pk %}">
+                    <i class="fas fa-eye me-2"></i> View Details
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{% url 'sensors:sensor_update' sensor.pk %}">
+                    <i class="fas fa-edit me-2"></i> Edit
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item text-danger" href="#">
+                    <i class="fas fa-power-off me-2"></i> Deactivate
+                </a>
+            </li>
+        </ul>
+    </div>
+</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-sensor fa-4x text-muted mb-4"></i>
+            <h5 class="text-muted mb-3">No Sensors Registered</h5>
+            <p class="text-muted mb-4">Add your first sensor to begin monitoring your farm conditions</p>
+            <a href="{% url 'sensors:sensor_create' %}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Add New Sensor
             </a>
+        </div>
+        {% endif %}
+    </div>
+    {% if sensors %}
+    <div class="card-footer bg-light">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-0 text-muted">Showing <strong>{{ sensors|length }}</strong> sensors</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'sensors:sensor_create' %}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus me-1"></i> Add Sensor
+                </a>
+            </div>
         </div>
     </div>
     {% endif %}

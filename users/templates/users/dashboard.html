@@ -180,17 +180,17 @@
             </li>
 
              <li class="nav-item">
-                <a class="nav-link active" href="/farms/">
-                    <i class="fas fa-tachometer-alt"></i>
+                <a class="nav-link active" href="/fields/">
+                    <i class="fas fa-map-marked-alt"></i>
                     <span>Farms</span>
                 </a>
             </li>
-            <li class="nav-item">
+            {% comment %} <li class="nav-item">
                 <a class="nav-link" href="/fields/">
                     <i class="fas fa-map-marked-alt"></i>
                     <span>Fields</span>
                 </a>
-            </li>
+            </li> {% endcomment %}
 
              <li class="nav-item">
                 <a class="nav-link" href="/sensors/">
@@ -210,7 +210,7 @@
                     <span>AI Insights</span>
                 </a>
             </li>
-            <li class="nav-item">
+            {% comment %} <li class="nav-item">
                 <a class="nav-link" href="#">
                     <i class="fas fa-bell"></i>
                     <span>Alerts</span>
@@ -221,7 +221,7 @@
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
                 </a>
-            </li>
+            </li> {% endcomment %}
         </ul>
 
         <div class="user-profile p-3 border-top">
@@ -247,11 +247,11 @@
             <ul class="dropdown-menu" aria-labelledby="farmDropdown" style="max-height: 300px; overflow-y: auto;">
                 {% for farm in farms %}
                     <li>
-                        <a class="dropdown-item fw-bold" href="#">{{ farm.name }}</a>
+                        <a class="dropdown-item fw-bold" href="farms:farm_list">{{ farm.name }}</a>
                     </li>
                     {% for field in farm.fields.all %}
                         <li>
-                            <a class="dropdown-item ms-3 small" href="#">{{ field.name }}</a>
+                            <a class="dropdown-item ms-3 small" href="fields:field_list">{{ field.name }}</a>
                         </li>
                     {% empty %}
                         <li class="dropdown-item text-muted">No fields</li>
@@ -405,44 +405,47 @@
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>SM-001</td>
-                                        <td><i class="fas fa-tint text-primary me-2"></i> Soil Moisture</td>
-                                        <td>Field A</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>65% (2 mins ago)</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-chart-line"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>TEMP-001</td>
-                                        <td><i class="fas fa-temperature-high text-danger me-2"></i> Temperature</td>
-                                        <td>Field B</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>24°C (5 mins ago)</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-chart-line"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>HUMID-001</td>
-                                        <td><i class="fas fa-water text-info me-2"></i> Humidity</td>
-                                        <td>Field C</td>
-                                        <td><span class="badge bg-warning">Unstable</span></td>
-                                        <td>65% (15 mins ago)</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-secondary">
-                                                <i class="fas fa-chart-line"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
+                               <tbody>
+                             {% for sensor in sensors %}
+                            <tr>
+                                <td>{{ sensor.sensor_id }}</td>
+                                <td>
+                                    {% if sensor.sensor_type == 'soil_moisture' %}
+                                        <i class="fas fa-tint text-primary me-2"></i> Soil Moisture
+                                    {% elif sensor.sensor_type == 'temperature' %}
+                                        <i class="fas fa-temperature-high text-danger me-2"></i> Temperature
+                                    {% elif sensor.sensor_type == 'humidity' %}
+                                        <i class="fas fa-water text-info me-2"></i> Humidity
+                                    {% else %}
+                                        <i class="fas fa-microchip text-secondary me-2"></i> {{ sensor.get_sensor_type_display }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ sensor.field.name }}</td>
+                                <td>
+                                    <span class="badge bg-{% if sensor.is_active %}success{% else %}secondary{% endif %}">
+                                        {% if sensor.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if sensor.last_reading %}
+                                        {{ sensor.last_reading.value }} ({{ sensor.last_reading.timestamp|timesince }} ago)
+                                    {% else %}
+                                        No readings
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'sensors:sensor_detail' sensor.pk %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-chart-line"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No sensors found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody> 
+
                             </table>
                         </div>
                     </div>

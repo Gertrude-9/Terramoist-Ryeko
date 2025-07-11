@@ -14,7 +14,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
+            <a class="navbar-brand" href="{% url 'predictions:prediction_home' %}">
                 <i class="fas fa-seedling me-2"></i>Terramoist
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -23,7 +23,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">
+                        {% comment %} <a class="nav-link" href="{% url 'predictions:dashboard' %}"> {% endcomment %}
                             <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                         </a>
                     </li>

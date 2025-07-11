@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegisterForm
 from django.core import serializers
+from sensors.models import Sensor 
 from farms.models import Farm  # make sure you have imported your Farm model
 
 def home(request):
@@ -97,3 +98,17 @@ def ai_insights_view(request):
 @login_required
 def alerts_view(request):
     return render(request, 'users/alerts.html')
+
+
+ # adjust the import to your actual app name
+
+# @login_required
+# def sensors_view(request):
+#     """View to display all sensors"""
+#     sensors = Sensor.objects.select_related('field').all()
+
+#     context = {
+#         'sensors': sensors,
+#     }
+#     return render(request, 'sensors/sensor_list.html', context)
+
